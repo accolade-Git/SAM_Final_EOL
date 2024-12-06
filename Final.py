@@ -59,6 +59,7 @@ class MyClass(QMainWindow):
         self.frame3 = None
         self.frame4 = None
         self.frame5 =None
+        self.converted_frame=None
 
 
         self.stage4_url = "http://192.168.2.253:6101/api/stage4"
@@ -405,10 +406,10 @@ class MyClass(QMainWindow):
                   #gps_ver_cleaned = self.Gps_ver.strip()
                   print('gps strip',self.Gps_ver)
                   
-                  if self.Gps_ver == 'L89HANR01A07S':
-                      self.ui.plainTextEdit_5.setStyleSheet("background-color: white;")
-                  else:
+                  if self.Gps_ver != 'L89HANR01A07S':
                       self.ui.plainTextEdit_5.setStyleSheet("background-color: red;")
+                  else:
+                      self.ui.plainTextEdit_5.setStyleSheet("background-color: white;")
                       
                 except UnicodeDecodeError:
                   print("Error decoding IMEI to ASCII. The data may contain non-ASCII characters.")
@@ -523,6 +524,15 @@ class MyClass(QMainWindow):
                 # Update the UI with the decoded message
                 self.ui.mains_input_2.setPlainText(self.mains_vtg)
                 self.ui.plainTextEdit_12.appendPlainText(f"Mains Voltage: {self.mains_vtg}\n")
+
+                if self.mains_vtg > '24.00':
+                      self.ui.mains_input_2.setStyleSheet("background-color: red;")
+                      self.ui.plainTextEdit_29.setPlainText("Fail")
+                      self.ui.plainTextEdit_29.setStyleSheet("""Font-size:16px ; font-weight : Bold;background-color:red""")
+                else:
+                      self.ui.mains_input_2.setStyleSheet("background-color: white;")
+                      self.ui.plainTextEdit_29.setPlainText("Pass")
+                      self.ui.plainTextEdit_29.setStyleSheet("""Font-size:16px ; font-weight : Bold;background-color:green""")
             else:
                 # If no message is received within the timeout period
                 print(f"Timeout waiting for message for CAN ID 0x115. No response received.")
@@ -572,6 +582,17 @@ class MyClass(QMainWindow):
                 # Update the UI with the decoded message
                 self.ui.IntBat_input_2.setPlainText(self.Int_vtg)
                 self.ui.plainTextEdit_12.appendPlainText(f"Int_Bat Voltage: {self.Int_vtg}\n")
+
+                if self.Int_vtg > '4.2':
+                      self.ui.IntBat_input_2.setStyleSheet("background-color: red;")
+                      self.ui.plainTextEdit_23.setPlainText("Fail")
+                      self.ui.plainTextEdit_23.setStyleSheet("""Font-size:16px ; font-weight : Bold;background-color:red""")
+                else:
+                      self.ui.IntBat_input_2.setStyleSheet("background-color: white;")
+                      self.ui.plainTextEdit_23.setPlainText("Pass")
+                      self.ui.plainTextEdit_23.setStyleSheet("""Font-size:16px ; font-weight : Bold;background-color:green""")
+
+                
             else:
                 # If no message is received within the timeout period
                 print(f"Timeout waiting for message for CAN ID 0x116. No response received.")
@@ -817,10 +838,10 @@ class MyClass(QMainWindow):
             received_frames = 0
 
             # Wait for the response
-            for i in range(expected_frame_counts.get(0x114, 0)):  # Ensure it defaults to 0 if the key is missing
+            for i in range(expected_frame_counts[0x114]):  # Ensure it defaults to 0 if the key is missing
                 message = self.bus.recv(timeout=2)  # 2-second timeout for each frame
                 if message:
-                    #print(f"Frame received for CAN ID 0x114: {message.data.hex()}\n")
+                    print(f"Frame received for CAN ID 0x114: {message.data.hex()}\n")
                     frame = message.data[1:].hex()  # Skip the 0th byte and convert the rest to hex
 
                     try:
@@ -828,21 +849,21 @@ class MyClass(QMainWindow):
                         bytes_frame = bytes.fromhex(frame)
 
                         # Decode to ASCII, ignoring invalid characters
-                        converted_frame = bytes_frame.decode('ascii', errors='ignore')
+                        self.converted_frame = bytes_frame.decode('ascii', errors='ignore')
                         #print(f"Converted frame: {converted_frame}\n")
 
                         # Ensure each frame is assigned only once
                         if self.frame1 is None:
-                            self.frame1 = converted_frame
+                            self.frame1 = self.converted_frame
                             #print(f"Frame 1: {self.frame1}")
                         elif self.frame2 is None:
-                            self.frame2 = converted_frame
+                            self.frame2 = self.converted_frame
                             #print(f"Frame 2: {self.frame2}")
                         elif self.frame3 is None:
-                            self.frame3 = converted_frame
+                            self.frame3 = self.converted_frame
                             #print(f"Frame 3: {self.frame3}")
                         elif self.frame4 is None:
-                            self.frame4 = converted_frame
+                            self.frame4 = self.converted_frame
                             #print(f"Frame 4: {self.frame4}")
 
                         # Increase the count of received frames
@@ -879,7 +900,6 @@ class MyClass(QMainWindow):
             self.function114_done = True
             time.sleep(2)
             self.execute_next_function()
-
 
        
 
@@ -1061,6 +1081,10 @@ class MyClass(QMainWindow):
         self.ui.MEMS_Za.setStyleSheet("background-color: white;")
         self.ui.plainTextEdit_12.clear()
         self.ui.plainTextEdit_12.setStyleSheet("background-color: white;")
+        self.ui.plainTextEdit_23.clear()
+        self.ui.plainTextEdit_23.setStyleSheet("background-color: white;")
+        self.ui.plainTextEdit_29.clear()
+        self.ui.plainTextEdit_29.setStyleSheet("background-color: white;")
 
 
         
