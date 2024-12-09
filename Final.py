@@ -66,6 +66,10 @@ class MyClass(QMainWindow):
         self.converted_frame=None
         self.RTC = None
         self.EpochToCurrentTime =None
+        self.Mains_result = None
+        self.IntVtg_result = None
+        self.Gps_result = None
+        self.RTC_result =None
 
 
         self.stage4_url = "http://192.168.2.253:6101/api/stage4"
@@ -541,6 +545,8 @@ class MyClass(QMainWindow):
                       self.ui.mains_input_2.setStyleSheet("background-color: white;")
                       self.ui.plainTextEdit_29.setPlainText("Pass")
                       self.ui.plainTextEdit_29.setStyleSheet("""Font-size:16px ; font-weight : Bold;background-color:green""")
+
+                self.Mains_result= self.ui.plainTextEdit_29.toPlainText()
             else:
                 # If no message is received within the timeout period
                 print(f"Timeout waiting for message for CAN ID 0x115. No response received.")
@@ -600,6 +606,7 @@ class MyClass(QMainWindow):
                       self.ui.plainTextEdit_23.setPlainText("Pass")
                       self.ui.plainTextEdit_23.setStyleSheet("""Font-size:16px ; font-weight : Bold;background-color:green""")
 
+                self.IntVtg_result = self.ui.plainTextEdit_23.toPlainText()
                 
             else:
                 # If no message is received within the timeout period
@@ -667,6 +674,8 @@ class MyClass(QMainWindow):
             else:
                 self.ui.NoOf_satellite.setPlainText(str(self.No_of_Sat))
                 self.ui.NoOf_satellite.setStyleSheet("background-color: white;")
+
+            self.Gps_result = self.ui.plainTextEdit_28.toPlainText()
 
 
 
@@ -1001,6 +1010,8 @@ class MyClass(QMainWindow):
                 # If no message is received within the timeout period
                 print(f"Timeout waiting for message for CAN ID 0x102. No response received.")
 
+            self.RTC_result = self.ui.plainTextEdit_21.toPlainText()
+
         except can.CanError as e:
             print(f"CAN error: {str(e)}")
 
@@ -1093,7 +1104,8 @@ class MyClass(QMainWindow):
             # Set the headers for the columns (only if the file is being created for the first time)
             headers = ['Date','Operator', 'QC Head', 'IMEI', 'ICCID', 'Application Version', 'GSM Version', 
                    'GPS Version', 'Mains vtg', 'Int_Bat vtg', 'GPS status', 'No.of Sat','CREG','CGREG','CSQ',
-                   'Operator','MQTT','No.Of Login packet']
+                   'Operator','MQTT','No.Of Login packet','MEMS Xa','MEMS Ya','MEMS Za','Mains result','IntBat result'
+                   ,'Gps result','RTC']
             ws.append(headers)  # Append headers as the first row
 
         # Clean the data before inserting into the worksheet
@@ -1115,7 +1127,15 @@ class MyClass(QMainWindow):
             self.clean_string(str(self.CSQ)),
             self.clean_string(str(self.operatorName)),
             self.clean_string(str(self.MQTT_status)),
-            self.clean_string(str(self.No_of_LogInPacket))
+            self.clean_string(str(self.No_of_LogInPacket)),
+            self.clean_string(str(self.frame1)),
+            self.clean_string(str(self.frame2)),
+            self.clean_string(str(self.frame5)),
+            self.clean_string(str(self.Mains_result)),
+            self.clean_string(str(self.IntVtg_result)),
+            self.clean_string(str(self.Gps_result)),
+            self.clean_string(str(self.RTC_result)),
+
         ]
     
         # Append the data to the next available row
@@ -1196,6 +1216,10 @@ class MyClass(QMainWindow):
         self.ui.plainTextEdit_23.setStyleSheet("background-color: white;")
         self.ui.plainTextEdit_29.clear()
         self.ui.plainTextEdit_29.setStyleSheet("background-color: white;")
+        self.ui.plainTextEdit_28.clear()
+        self.ui.plainTextEdit_28.setStyleSheet("background-color: white;")
+        self.ui.plainTextEdit_21.clear()
+        self.ui.plainTextEdit_21.setStyleSheet("background-color: white;")
 
 
         
