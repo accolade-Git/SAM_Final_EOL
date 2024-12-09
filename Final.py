@@ -6,6 +6,8 @@ import sys
 import os
 import requests
 import datetime
+from datetime import datetime
+import pytz
 from PyQt5.QtGui  import QCursor
 from PyQt5.QtCore import QPoint
 from openpyxl import Workbook
@@ -18,10 +20,12 @@ from finalTesting import Ui_FinalTestingUtility
 import resources_rc
 
 # Expected CAN IDs and their frame counts
-expected_frame_counts = {0x100: 3, 0x101 :3, 0x103 : 3, 0x105 :2, 0x106 :3 , 0x115 : 1, 0x116 : 1,0x109 :1,0x110:1, 0x112 :2,0x113 :1,0x114:4}
+expected_frame_counts = {0x100: 3, 0x101 :3, 0x103 : 3, 0x105 :2, 0x106 :3 , 0x115 : 1, 0x116 : 1,0x109 :1,0x110:1, 0x112 :2,0x113 :1,0x114:4
+                         ,0x102 : 1}
 
 # Initialize received_frames with empty lists for each CAN ID
-received_frames = {0x100: [],0x101 : [] , 0x103 :[],0x105 :[],0x106 :[] , 0x115 :[], 0x116 : [],0x109:[],0x110:[],0x112:[],0x113:[],0x114:[]}
+received_frames = {0x100: [],0x101 : [] , 0x103 :[],0x105 :[],0x106 :[] , 0x115 :[], 0x116 : [],0x109:[],0x110:[],0x112:[],0x113:[],0x114:[]
+                   ,0x102:[]}
 
 
 
@@ -60,6 +64,8 @@ class MyClass(QMainWindow):
         self.frame4 = None
         self.frame5 =None
         self.converted_frame=None
+        self.RTC = None
+        self.EpochToCurrentTime =None
 
 
         self.stage4_url = "http://192.168.2.253:6101/api/stage4"
@@ -136,6 +142,7 @@ class MyClass(QMainWindow):
         self.function112_done = False
         self.function113_done = False
         self.function114_done = False
+        self.function102_done = False
 
         # Timer for delays
         self.timer = QTimer(self)
@@ -170,6 +177,7 @@ class MyClass(QMainWindow):
         self.function112_done = False
         self.function113_done = False
         self.function114_done = False
+        self.function102_done = False
         
         # Call the first function
         self.fun_0x100()
@@ -636,13 +644,32 @@ class MyClass(QMainWindow):
                 self.ui.Operator_2.setPlainText(str(self.Gps_status))
                 self.No_of_Sat = message.data[2]
                 print('No. of sat:',self.No_of_Sat)
-                self.ui.NoOf_satellite.setPlainText(str(self.No_of_Sat))
+                #self.ui.NoOf_satellite.setPlainText(str(self.No_of_Sat))
                 self.ui.plainTextEdit_12.appendPlainText(f"GPS status: {str(self.Gps_status)}\n")
                 self.ui.plainTextEdit_12.appendPlainText(f"No. of Satellite: {str(self.No_of_Sat)}\n")
             
             else:
                 # If no message is received within the timeout period
                 print(f"Timeout waiting for message for CAN ID 0x109. No response received.")
+
+            if self.Gps_status != 1:
+                
+                self.ui.plainTextEdit_28.setPlainText("Fail")
+                self.ui.plainTextEdit_28.setStyleSheet("""Font-size:16px ; font-weight : Bold;background-color:red""")
+            else:
+                
+                self.ui.plainTextEdit_28.setPlainText("Pass")
+                self.ui.plainTextEdit_28.setStyleSheet("""Font-size:16px ; font-weight : Bold;background-color:green""")
+
+            if self.No_of_Sat ==3000:
+                self.ui.NoOf_satellite.setPlainText(str('0'))
+                self.ui.NoOf_satellite.setStyleSheet("background-color: red;")
+            else:
+                self.ui.NoOf_satellite.setPlainText(str(self.No_of_Sat))
+                self.ui.NoOf_satellite.setStyleSheet("background-color: white;")
+
+
+
 
         except can.CanError as e:
             print(f"CAN error: {str(e)}")
@@ -681,13 +708,28 @@ class MyClass(QMainWindow):
             if message:
                 self.CREG = message.data[1]
                 print('CREG :',self.CREG)
-                self.ui.CREG.setPlainText(str(self.CREG))
+                self.ui.CSQ.setPlainText(str(self.CREG))
+                if self.CREG !=5:
+                    self.ui.CSQ.setStyleSheet("background-color: red;")
+                else:
+                    self.ui.CSQ.setStyleSheet("background-color: white;")
+
                 self.CGREG = message.data[2]
                 print('CGREG:',self.CGREG)
                 self.ui.CGREG.setPlainText(str(self.CGREG))
+                if self.CGREG != 5:
+                    self.ui.CGREG.setStyleSheet("background-color: red;")
+                else:
+                    self.ui.CGREG.setStyleSheet("background-color: white;")
+
                 self.CSQ =message.data[3]
                 print('CSQ',self.CSQ)
-                self.ui.CSQ.setPlainText(str(self.CSQ))
+                self.ui.CREG.setPlainText(str(self.CSQ))
+                if self.CSQ < 10:
+                    self.ui.CREG.setStyleSheet("background-color: red;")
+                else:
+                    self.ui.CREG.setStyleSheet("background-color: white;")
+
                 self.ui.plainTextEdit_12.appendPlainText(f"CREG: {str(self.CREG)}\n")
                 self.ui.plainTextEdit_12.appendPlainText(f"CGREG: {str(self.CGREG)}\n")
                 self.ui.plainTextEdit_12.appendPlainText(f"CSQ : {str(self.CSQ)}\n")
@@ -695,6 +737,8 @@ class MyClass(QMainWindow):
             else:
                 # If no message is received within the timeout period
                 print(f"Timeout waiting for message for CAN ID 0x109. No response received.")
+
+           
 
         except can.CanError as e:
             print(f"CAN error: {str(e)}")
@@ -747,10 +791,10 @@ class MyClass(QMainWindow):
                   self.ui.plainTextEdit_12.appendPlainText(f"Operator Name : {self.operatorName}\n")
                  
                   
-                #   if self.Gps_ver == 'L89HANR01A07S':
-                #       self.ui.plainTextEdit_5.setStyleSheet("background-color: white;")
-                #   else:
-                #       self.ui.plainTextEdit_5.setStyleSheet("background-color: red;")
+                  if self.operatorName == 'AIRTEL 4G':
+                      self.ui.Operator.setStyleSheet("background-color: white;")
+                  else:
+                      self.ui.Operator.setStyleSheet("background-color: red;")
                       
                 except UnicodeDecodeError:
                   print("Error decoding IMEI to ASCII. The data may contain non-ASCII characters.")
@@ -795,9 +839,19 @@ class MyClass(QMainWindow):
                 self.MQTT_status = message.data[1]
                 print('MQTT status :',self.MQTT_status)
                 self.ui.Analog1_2.setPlainText(str(self.MQTT_status))
+                if self.MQTT_status != 1:
+                    self.ui.Analog1_2.setStyleSheet("background-color: red;")
+                else:
+                    self.ui.Analog1_2.setStyleSheet("background-color: white;")
+
                 self.No_of_LogInPacket = message.data[2]
                 print('No. of Login Packet:',self.No_of_LogInPacket)
                 self.ui.MQTT.setPlainText(str(self.No_of_LogInPacket))
+                if self.No_of_LogInPacket != 1:
+                    self.ui.MQTT.setStyleSheet("background-color: red;")
+                else:
+                    self.ui.MQTT.setStyleSheet("background-color: white;")
+
                 self.ui.plainTextEdit_12.appendPlainText(f"MQTT status: {str(self.MQTT_status)}\n")
                 self.ui.plainTextEdit_12.appendPlainText(f"No. of Login packet: {str(self.No_of_LogInPacket)}\n")
             
@@ -901,9 +955,63 @@ class MyClass(QMainWindow):
             time.sleep(2)
             self.execute_next_function()
 
-       
+    def fun_0x102(self):
+        if self.busy:  # Check if the system is busy
+            print("System is busy, please wait...")
+            return
 
+        if self.bus is None:  # Check if the bus was initialized properly
+            print("CAN Bus not initialized. Cannot send message.")
+            return
 
+        self.busy = True  # Mark the system as busy
+        current_time = datetime.now(pytz.utc)  # Get current time in UTC (offset-aware)
+        print('Current time (UTC):', current_time)
+
+        try:
+            # Create the CAN message
+            msg = can.Message(arbitration_id=0x102, data=[0, 0, 0, 0, 0, 0, 0, 0], is_extended_id=False)
+
+            # Send the message once
+            self.bus.send(msg)
+
+            # Wait for a response with a timeout (e.g., 2 seconds)
+            message = self.bus.recv(timeout=2)  # 2 seconds timeout for response
+
+            if message:
+                RTC_data = message.data[1:5]
+                print('Hex RTC', RTC_data)
+
+                self.RTC = int.from_bytes(RTC_data, byteorder='big')
+                print('INT RTC :', self.RTC)
+
+                # Convert the epoch time (RTC) to datetime in UTC
+                self.EpochToCurrentTime = datetime.fromtimestamp(self.RTC, tz=timezone.utc)
+                print('Epoch to current time (UTC):', self.EpochToCurrentTime)
+                
+
+                # Compare the two times (both are now offset-aware)
+                if self.EpochToCurrentTime < current_time:
+                    self.ui.plainTextEdit_21.setPlainText("Fail")
+                    self.ui.plainTextEdit_21.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: red""")
+                else:
+                    self.ui.plainTextEdit_21.setPlainText("Pass")
+                    self.ui.plainTextEdit_21.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: green""")
+            else:
+                # If no message is received within the timeout period
+                print(f"Timeout waiting for message for CAN ID 0x102. No response received.")
+
+        except can.CanError as e:
+            print(f"CAN error: {str(e)}")
+
+        finally:
+            self.busy = False  # Mark the system as not busy
+            received_frames[0x102].clear()  # Clear any frames in the buffer for ID 0x102
+            self.function102_done = True
+            time.sleep(2)  # Sleep to allow processing
+            self.execute_next_function()  # Move on to the next function
+
+   
 
     def execute_next_function(self):
         """Check which function is done and call the next one."""
@@ -939,6 +1047,9 @@ class MyClass(QMainWindow):
 
         elif self.function113_done and not self.function114_done:
             self.fun_0x114()
+
+        elif self.function114_done and not self.function102_done:
+            self.fun_0x102()
         else:
             print("All functions completed.")
             # You can enable a button or perform other tasks once all functions are done
