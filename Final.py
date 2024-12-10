@@ -660,7 +660,7 @@ class MyClass(QMainWindow):
                 print(f"Timeout waiting for message for CAN ID 0x109. No response received.")
 
             if self.Gps_status != 1:
-                
+                self.ui.Operator_2.setStyleSheet("background-color:red")
                 self.ui.plainTextEdit_28.setPlainText("Fail")
                 self.ui.plainTextEdit_28.setStyleSheet("""Font-size:16px ; font-weight : Bold;background-color:red""")
             else:
@@ -668,7 +668,7 @@ class MyClass(QMainWindow):
                 self.ui.plainTextEdit_28.setPlainText("Pass")
                 self.ui.plainTextEdit_28.setStyleSheet("""Font-size:16px ; font-weight : Bold;background-color:green""")
 
-            if self.No_of_Sat ==3000:
+            if self.No_of_Sat ==3000 or self.No_of_Sat == 184:
                 self.ui.NoOf_satellite.setPlainText(str('0'))
                 self.ui.NoOf_satellite.setStyleSheet("background-color: red;")
             else:
