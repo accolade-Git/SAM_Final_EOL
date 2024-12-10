@@ -982,8 +982,9 @@ class MyClass(QMainWindow):
             return
 
         self.busy = True  # Mark the system as busy
-        current_time = datetime.now(pytz.utc)  # Get current time in UTC (offset-aware)
-        print('Current time (UTC):', current_time)
+        current_time_utc = datetime.now(pytz.utc)  # Get current time in UTC (offset-aware)
+        current_time_ist = current_time_utc.astimezone(pytz.timezone('Asia/Kolkata'))  # Convert to IST
+        print('Current time (IST):', current_time_ist)
 
         try:
             # Create the CAN message
@@ -997,18 +998,22 @@ class MyClass(QMainWindow):
 
             if message:
                 RTC_data = message.data[1:5]
-                print('Hex RTC', RTC_data)
+                #print('Hex RTC:', RTC_data)
 
                 self.RTC = int.from_bytes(RTC_data, byteorder='big')
-                print('INT RTC :', self.RTC)
+                #print('INT RTC:', self.RTC)
 
                 # Convert the epoch time (RTC) to datetime in UTC
-                self.EpochToCurrentTime = datetime.fromtimestamp(self.RTC, tz=timezone.utc)
-                print('Epoch to current time (UTC):', self.EpochToCurrentTime)
-                
+                epoch_time_utc = datetime.fromtimestamp(self.RTC, tz=pytz.utc)
+                epoch_time_ist = epoch_time_utc.astimezone(pytz.timezone('Asia/Kolkata'))  # Convert to IST
+                print('Epoch to current time (IST):', epoch_time_ist)
 
                 # Compare the two times (both are now offset-aware)
-                if self.EpochToCurrentTime < current_time:
+                time_difference = current_time_ist - epoch_time_ist
+
+
+                # Compare the two times (both are now offset-aware)
+                if time_difference.total_seconds()>15:
                     self.ui.plainTextEdit_21.setPlainText("Fail")
                     self.ui.plainTextEdit_21.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: red""")
                 else:
