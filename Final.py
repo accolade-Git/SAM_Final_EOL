@@ -895,6 +895,14 @@ class MyClass(QMainWindow):
             # Send the message
             self.bus.send(msg)
 
+            # Reset frames before starting to receive
+            self.frame1 = None
+            self.frame2 = None
+            self.frame3 = None
+            self.frame4 = None
+            self.frame5 =None
+
+
             
 
             # Create a list to keep track of frames received so far
