@@ -21,11 +21,11 @@ import resources_rc
 
 # Expected CAN IDs and their frame counts
 expected_frame_counts = {0x100: 3, 0x101 :3, 0x103 : 3, 0x105 :2, 0x106 :3 , 0x115 : 1, 0x116 : 1,0x109 :1,0x110:1, 0x112 :2,0x113 :1,0x114:4
-                         ,0x102 : 1}
+                         ,0x102 : 1,0x119 :1}
 
 # Initialize received_frames with empty lists for each CAN ID
 received_frames = {0x100: [],0x101 : [] , 0x103 :[],0x105 :[],0x106 :[] , 0x115 :[], 0x116 : [],0x109:[],0x110:[],0x112:[],0x113:[],0x114:[]
-                   ,0x102:[]}
+                   ,0x102:[] , 0x119 :[]}
 
 
 
@@ -41,6 +41,7 @@ class MyClass(QMainWindow):
         self.ui.pushButton_8.clicked.connect(self.start_functions)
         self.ui.pushButton_2.clicked.connect(self.save_to_excel)
         self.ui.pushButton.clicked.connect(self.on_button_click)
+        self.ui.pushButton_6.clicked.connect(self.DIs_func)
         self.initialize_can_bus()
         self.current_datetime =None
         self.IMEI_ascii= None
@@ -70,6 +71,8 @@ class MyClass(QMainWindow):
         self.IntVtg_result = None
         self.Gps_result = None
         self.RTC_result =None
+        self.DI1_H =None
+        self.DI1_L= None
 
 
         self.stage4_url = "http://192.168.2.253:6101/api/stage4"
@@ -184,7 +187,7 @@ class MyClass(QMainWindow):
         self.function102_done = False
         
         # Call the first function
-        self.fun_0x100()
+        self.fun_0x103()
 
     def fun_0x100(self):
         if self.busy:  # Check if the system is busy
@@ -416,7 +419,7 @@ class MyClass(QMainWindow):
                   self.ui.plainTextEdit_5.setPlainText(self.Gps_ver)
                   self.ui.plainTextEdit_12.appendPlainText(f"GPS Version : {self.Gps_ver}\n")
                   #gps_ver_cleaned = self.Gps_ver.strip()
-                  print('gps strip',self.Gps_ver)
+                  print('gps strip',{repr(self.Gps_ver)})
                   
                   if self.Gps_ver != 'L89HANR01A07S':
                       self.ui.plainTextEdit_5.setStyleSheet("background-color: red;")
@@ -476,7 +479,7 @@ class MyClass(QMainWindow):
  
                 try:
                   self.GSM_ver = complete_message.decode('ascii')  # Decode bytes into ASCII string
-                  print('GSM ver ASCII :',self.GSM_ver)
+                  print('GSM ver ASCII :',{repr(self.GSM_ver)})
                   self.ui.plainTextEdit_6.setPlainText(self.GSM_ver)
                   self.ui.plainTextEdit_12.appendPlainText(f"GSM Version : {self.GSM_ver}\n")
 
@@ -795,7 +798,7 @@ class MyClass(QMainWindow):
  
                 try:
                   self.operatorName = complete_message.decode('ascii')  # Decode bytes into ASCII string
-                  print('Operator Name :',self.operatorName)
+                  print('Operator Name :',{repr(self.operatorName)})
                   self.ui.Operator.setPlainText(self.operatorName)
                   self.ui.plainTextEdit_12.appendPlainText(f"Operator Name : {self.operatorName}\n")
                  
@@ -1035,38 +1038,118 @@ class MyClass(QMainWindow):
             time.sleep(2)  # Sleep to allow processing
             self.execute_next_function()  # Move on to the next function
 
+    def DIs_func(self):
+        
+        if self.busy:  # Check if the system is busy
+            print("System is busy, please wait...")
+            return
+
+        if self.bus is None:  # Check if the bus was initialized properly
+            print("CAN Bus not initialized. Cannot send message.")
+            return
+
+        self.busy = True  # Mark the system as busy
+
+        try:
+            # Create the CAN message
+            msg = can.Message(arbitration_id=0x119, data=[0, 0, 0, 0, 0, 0, 0, 0], is_extended_id=False)
+
+            # Send the message once
+            self.bus.send(msg)
+            #print(f"Message sent on {self.bus.channel_info}")
+
+            # Wait for a response with a timeout (e.g., 2 seconds)
+            message = self.bus.recv(timeout=2)  # 2 seconds timeout for response
+           
+            if message:
+                self.IGN = message.data[1]
+                print('IGN :',self.IGN)
+                
+            
+                self.tamper = message.data[2]
+                print('Tamper:',self.tamper)
+                
+                
+                self.DI1 =message.data[3]
+                print('DI1 :',self.DI1)
+                
+            
+                self.DI2 =message.data[4]
+                print('DI2 :',self.DI2)
+                
+                # self.ui.plainTextEdit_12.appendPlainText(f"CREG: {str(self.CREG)}\n")
+                # self.ui.plainTextEdit_12.appendPlainText(f"CGREG: {str(self.CGREG)}\n")
+                # self.ui.plainTextEdit_12.appendPlainText(f"CSQ : {str(self.CSQ)}\n")
+            
+            else:
+                # If no message is received within the timeout period
+                print(f"Timeout waiting for message for CAN ID 0x109. No response received.")
+
+            if not self.ui.DI1_H_3.toPlainText():
+                    self.ui.DI1_H_3.setPlainText(str(self.IGN))
+            else:
+                    self.ui.IGN_H.setPlainText(str(self.IGN))
+
+            if not self.ui.DI1_H_6.toPlainText():
+                    self.ui.DI1_H_6.setPlainText(str(self.tamper))
+            else:
+                    self.ui.DI1_H_7.setPlainText(str(self.tamper))
+
+            if not self.ui.DI1_H_4.toPlainText():
+                    self.ui.DI1_H_4.setPlainText(str(self.DI1))
+            else:
+                    self.ui.DI1_H_5.setPlainText(str(self.DI1))
+
+            if not self.ui.DI1_H_8.toPlainText():
+                    self.ui.DI1_H_8.setPlainText(str(self.DI2))
+            else:
+                    self.ui.DI_H.setPlainText(str(self.DI2))
+
+           
+
+        except can.CanError as e:
+            print(f"CAN error: {str(e)}")
+ 
+        finally:
+            self.busy = False  # Mark the system as not busy
+            received_frames[0x119].clear()
+            #self.function110_done = True
+            time.sleep(2)
+            #self.execute_next_function()
+            #print("Frames cleared for CAN ID 0x109")
+
    
 
     def execute_next_function(self):
         """Check which function is done and call the next one."""
-        if self.function100_done and not self.function101_done:
-            self.fun_0x101()  # Call function 2 after function 1 is done
+        if self.function103_done and not self.function106_done:
+            self.fun_0x106()  # Call function 2 after function 1 is done
 
-        elif self.function101_done and not self.function103_done:
-             self.fun_0x103()  # Call function 3 after function 2 is done
+        elif self.function106_done and not self.function105_done:
+             self.fun_0x105()  # Call function 3 after function 2 is done
 
-        elif self.function103_done and not self.function105_done:
-            self.fun_0x105()
+        elif self.function105_done and not self.function101_done:
+            self.fun_0x101()
 
-        elif self.function105_done and not self.function106_done:
-            self.fun_0x106()
+        elif self.function101_done and not self.function100_done:
+            self.fun_0x100()
 
-        elif self.function106_done and not self.function115_done:
-            self.fun_0x115()
-
-        elif self.function115_done and not self.function116_done:
-            self.fun_0x116()
-
-        elif self.function116_done and not self.function109_done:
-            self.fun_0x109()
-
-        elif self.function109_done and not self.function110_done:
+        elif self.function100_done and not self.function110_done:
             self.fun_0x110()
 
         elif self.function110_done and not self.function112_done:
             self.fun_0x112()
 
-        elif self.function112_done and not self.function113_done:
+        elif self.function112_done and not self.function109_done:
+            self.fun_0x109()
+
+        elif self.function109_done and not self.function115_done:
+            self.fun_0x115()
+
+        elif self.function115_done and not self.function116_done:
+            self.fun_0x116()
+
+        elif self.function116_done and not self.function113_done:
             self.fun_0x113()
 
         elif self.function113_done and not self.function114_done:
@@ -1078,6 +1161,9 @@ class MyClass(QMainWindow):
             print("All functions completed.")
             # You can enable a button or perform other tasks once all functions are done
             self.ui.pushButton_2.setEnabled(True)  # Enable button after all functions are done
+
+    
+
 
  
  
