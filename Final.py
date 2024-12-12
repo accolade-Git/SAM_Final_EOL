@@ -73,6 +73,7 @@ class MyClass(QMainWindow):
         self.RTC_result =None
         self.DI1_H =None
         self.DI1_L= None
+        self.IGN = None
 
 
         self.stage4_url = "http://192.168.2.253:6101/api/stage4"
@@ -333,7 +334,7 @@ class MyClass(QMainWindow):
            
             # Send the message
             self.bus.send(msg)
-            print(f"Message sent on {self.bus.channel_info}")
+            #print(f"Message sent on {self.bus.channel_info}")
  
             # Wait for the response
             for i in range(expected_frame_counts[0x103]):
@@ -718,6 +719,7 @@ class MyClass(QMainWindow):
             message = self.bus.recv(timeout=2)  # 2 seconds timeout for response
 
             if message:
+                #print(f"Received message from CAN ID {hex(message.arbitration_id)}: {message.data.hex()}")
                 self.CREG = message.data[1]
                 print('CREG :',self.CREG)
                 self.ui.CSQ.setPlainText(str(self.CREG))
@@ -784,7 +786,7 @@ class MyClass(QMainWindow):
             for i in range(expected_frame_counts[0x112]):
                 message = self.bus.recv(timeout=2)  # 1 second timeout for each frame
                 if message:
-                    print(f"Received message from CAN ID {hex(message.arbitration_id)}: {message.data.hex()}")
+                    #print(f"Received message from CAN ID {hex(message.arbitration_id)}: {message.data.hex()}")
                     received_frames[0x112].append(message)
                 else:
                     print(f"Timeout waiting for message for CAN ID 0x100. No response received.")
@@ -794,7 +796,7 @@ class MyClass(QMainWindow):
                 frames = received_frames[0x112]
                 frames.sort(key=lambda x: x.data[0])  # Sort by sequence number
                 complete_message = b''.join(frame.data[1:] for frame in frames)
-                print(f"Complete for CAN ID 0x112: {complete_message.hex()}")
+                #print(f"Complete for CAN ID 0x112: {complete_message.hex()}")
  
                 try:
                   self.operatorName = complete_message.decode('ascii')  # Decode bytes into ASCII string
@@ -850,11 +852,13 @@ class MyClass(QMainWindow):
             if message:
                 self.MQTT_status = message.data[1]
                 print('MQTT status :',self.MQTT_status)
-                self.ui.Analog1_2.setPlainText(str(self.MQTT_status))
-                if self.MQTT_status != 1:
+
+                if self.MQTT_status == 0 or self.MQTT_status == 255:
                     self.ui.Analog1_2.setStyleSheet("background-color: red;")
+                    self.ui.Analog1_2.setPlainText(str('0'))
                 else:
                     self.ui.Analog1_2.setStyleSheet("background-color: white;")
+                    self.ui.Analog1_2.setPlainText(str(self.MQTT_status))
 
                 self.No_of_LogInPacket = message.data[2]
                 print('No. of Login Packet:',self.No_of_LogInPacket)
@@ -915,7 +919,7 @@ class MyClass(QMainWindow):
             for i in range(expected_frame_counts[0x114]):  # Ensure it defaults to 0 if the key is missing
                 message = self.bus.recv(timeout=2)  # 2-second timeout for each frame
                 if message:
-                    print(f"Frame received for CAN ID 0x114: {message.data.hex()}\n")
+                    #print(f"Frame received for CAN ID 0x114: {message.data.hex()}\n")
                     frame = message.data[1:].hex()  # Skip the 0th byte and convert the rest to hex
 
                     try:
@@ -1067,6 +1071,7 @@ class MyClass(QMainWindow):
                 
             
                 self.tamper = message.data[2]
+                self.ui.Tamp_L.setPlainText(str(self.tamper))
                 print('Tamper:',self.tamper)
                 
                 
@@ -1076,10 +1081,11 @@ class MyClass(QMainWindow):
             
                 self.DI2 =message.data[4]
                 print('DI2 :',self.DI2)
+
+                self.DI3 =message.data[5]
+                print('DI3 :',self.DI3)
                 
-                # self.ui.plainTextEdit_12.appendPlainText(f"CREG: {str(self.CREG)}\n")
-                # self.ui.plainTextEdit_12.appendPlainText(f"CGREG: {str(self.CGREG)}\n")
-                # self.ui.plainTextEdit_12.appendPlainText(f"CSQ : {str(self.CSQ)}\n")
+                
             
             else:
                 # If no message is received within the timeout period
@@ -1091,19 +1097,23 @@ class MyClass(QMainWindow):
                     self.ui.IGN_H.setPlainText(str(self.IGN))
 
             if not self.ui.DI1_H_6.toPlainText():
-                    self.ui.DI1_H_6.setPlainText(str(self.tamper))
+                    self.ui.DI1_H_6.setPlainText(str(self.DI1))
             else:
-                    self.ui.DI1_H_7.setPlainText(str(self.tamper))
+                    self.ui.DI1_H_7.setPlainText(str(self.DI1))
 
             if not self.ui.DI1_H_4.toPlainText():
-                    self.ui.DI1_H_4.setPlainText(str(self.DI1))
+                    self.ui.DI1_H_4.setPlainText(str(self.DI2))
             else:
-                    self.ui.DI1_H_5.setPlainText(str(self.DI1))
+                    self.ui.DI1_H_5.setPlainText(str(self.DI2))
 
             if not self.ui.DI1_H_8.toPlainText():
-                    self.ui.DI1_H_8.setPlainText(str(self.DI2))
+                    self.ui.DI1_H_8.setPlainText(str(self.DI3))
             else:
-                    self.ui.DI_H.setPlainText(str(self.DI2))
+                    self.ui.DI_H.setPlainText(str(self.DI3))
+
+            self.ui.plainTextEdit_12.appendPlainText(f"IGN: {str(self.IGN)}\n")
+            self.ui.plainTextEdit_12.appendPlainText(f"Tamper: {str(self.tamper)}\n")
+            self.ui.plainTextEdit_12.appendPlainText(f"DI1,DI2,DI3: {self.DI1}, {self.DI2}, {self.DI3}")
 
            
 
@@ -1190,7 +1200,7 @@ class MyClass(QMainWindow):
     def save_to_excel(self):
         # Check if the file already exists
         current_directory = os.getcwd()
-        file_path = os.path.join(current_directory, "saved_data.xlsx")
+        file_path = os.path.join(current_directory, "Final_Testing_DeviceStatus_{self.current_datetime}.xlsx")
 
         # If the file exists, load the existing workbook; otherwise, create a new one
         if os.path.exists(file_path):
@@ -1201,7 +1211,7 @@ class MyClass(QMainWindow):
             ws = wb.active
 
             # Set the headers for the columns (only if the file is being created for the first time)
-            headers = ['Date','Operator', 'QC Head', 'IMEI', 'ICCID', 'Application Version', 'GSM Version', 
+            headers = ['Date','Model','Operator', 'QC Head', 'IMEI', 'ICCID', 'Application Version', 'GSM Version', 
                    'GPS Version', 'Mains vtg', 'Int_Bat vtg', 'GPS status', 'No.of Sat','CREG','CGREG','CSQ',
                    'Operator','MQTT','No.Of Login packet','MEMS Xa','MEMS Ya','MEMS Za','Mains result','IntBat result'
                    ,'Gps result','RTC']
@@ -1210,6 +1220,7 @@ class MyClass(QMainWindow):
         # Clean the data before inserting into the worksheet
         data = [
             self.clean_string(str(self.current_datetime)),
+            self.clean_string(str(self.model_name)),
             self.clean_string(self.operator),
             self.clean_string(self.qc_head),
             self.clean_string(self.IMEI_ascii),
