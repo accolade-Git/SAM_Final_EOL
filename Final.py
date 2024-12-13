@@ -74,6 +74,16 @@ class MyClass(QMainWindow):
         self.DI1_H =None
         self.DI1_L= None
         self.IGN = None
+        self.DI1_status = False
+        self.DI2_status = False
+        self.DI3_status = False
+        self.DI1_seen_0 = False
+        self.DI1_seen_1 = False
+        self.DI2_seen_0 = False
+        self.DI2_seen_1 = False
+        self.DI3_seen_0 = False
+        self.DI3_seen_1 = False
+
 
 
         self.stage4_url = "http://192.168.2.253:6101/api/stage4"
@@ -1043,91 +1053,128 @@ class MyClass(QMainWindow):
             self.execute_next_function()  # Move on to the next function
 
     def DIs_func(self):
+            if self.busy:  # Check if the system is busy
+                print("System is busy, please wait...")
+                return
+
+            if self.bus is None:  # Check if the bus was initialized properly
+                print("CAN Bus not initialized. Cannot send message.")
+                return
+
+            self.busy = True  # Mark the system as busy
+
+            try:
+                # Create the CAN message
+                msg = can.Message(arbitration_id=0x119, data=[0, 0, 0, 0, 0, 0, 0, 0], is_extended_id=False)
+
+                # Send the message once
+                self.bus.send(msg)
+
+                # Wait for a response with a timeout (e.g., 2 seconds)
+                message = self.bus.recv(timeout=2)  # 2 seconds timeout for response
         
-        if self.busy:  # Check if the system is busy
-            print("System is busy, please wait...")
-            return
-
-        if self.bus is None:  # Check if the bus was initialized properly
-            print("CAN Bus not initialized. Cannot send message.")
-            return
-
-        self.busy = True  # Mark the system as busy
-
-        try:
-            # Create the CAN message
-            msg = can.Message(arbitration_id=0x119, data=[0, 0, 0, 0, 0, 0, 0, 0], is_extended_id=False)
-
-            # Send the message once
-            self.bus.send(msg)
-            #print(f"Message sent on {self.bus.channel_info}")
-
-            # Wait for a response with a timeout (e.g., 2 seconds)
-            message = self.bus.recv(timeout=2)  # 2 seconds timeout for response
-           
-            if message:
-                self.IGN = message.data[1]
-                print('IGN :',self.IGN)
-                
+                if message:
+                    self.IGN = message.data[1]
+                    print('IGN :', self.IGN)
             
-                self.tamper = message.data[2]
-                self.ui.Tamp_L.setPlainText(str(self.tamper))
-                print('Tamper:',self.tamper)
-                
-                
-                self.DI1 =message.data[3]
-                print('DI1 :',self.DI1)
-                
+                    self.tamper = message.data[2]
+                    self.ui.Tamp_L.setPlainText(str(self.tamper))
+                    print('Tamper:', self.tamper)
             
-                self.DI2 =message.data[4]
-                print('DI2 :',self.DI2)
-
-                self.DI3 =message.data[5]
-                print('DI3 :',self.DI3)
-                
-                
+                    self.DI1 = message.data[3]
+                    print('DI1 :', self.DI1)
             
-            else:
-                # If no message is received within the timeout period
-                print(f"Timeout waiting for message for CAN ID 0x109. No response received.")
+                    self.DI2 = message.data[4]
+                    print('DI2 :', self.DI2)
 
-            if not self.ui.DI1_H_3.toPlainText():
+                    self.DI3 = message.data[5]
+                    print('DI3 :', self.DI3)
+            
+                else:
+                    # If no message is received within the timeout period
+                    print(f"Timeout waiting for message for CAN ID 0x119. No response received.")
+
+                # Update UI fields if they are empty
+                if not self.ui.DI1_H_3.toPlainText():
                     self.ui.DI1_H_3.setPlainText(str(self.IGN))
-            else:
+                else:
                     self.ui.IGN_H.setPlainText(str(self.IGN))
 
-            if not self.ui.DI1_H_6.toPlainText():
+                if not self.ui.DI1_H_6.toPlainText():
                     self.ui.DI1_H_6.setPlainText(str(self.DI1))
-            else:
+                else:
                     self.ui.DI1_H_7.setPlainText(str(self.DI1))
 
-            if not self.ui.DI1_H_4.toPlainText():
+                if not self.ui.DI1_H_4.toPlainText():
                     self.ui.DI1_H_4.setPlainText(str(self.DI2))
-            else:
+                else:
                     self.ui.DI1_H_5.setPlainText(str(self.DI2))
 
-            if not self.ui.DI1_H_8.toPlainText():
+                if not self.ui.DI1_H_8.toPlainText():
                     self.ui.DI1_H_8.setPlainText(str(self.DI3))
-            else:
+                else:
                     self.ui.DI_H.setPlainText(str(self.DI3))
 
-            self.ui.plainTextEdit_12.appendPlainText(f"IGN: {str(self.IGN)}\n")
-            self.ui.plainTextEdit_12.appendPlainText(f"Tamper: {str(self.tamper)}\n")
-            self.ui.plainTextEdit_12.appendPlainText(f"DI1,DI2,DI3: {self.DI1}, {self.DI2}, {self.DI3}")
+                self.ui.plainTextEdit_12.appendPlainText(f"IGN: {str(self.IGN)}\n")
+                self.ui.plainTextEdit_12.appendPlainText(f"Tamper: {str(self.tamper)}\n")
+                self.ui.plainTextEdit_12.appendPlainText(f"DI1,DI2,DI3: {self.DI1}, {self.DI2}, {self.DI3}")
 
-           
+                # Track whether we have seen both states (0 and 1) for each DI
+                # Check and update DI1 status
+                if self.DI1 == 0:
+                    self.DI1_seen_0 = True  # Mark that we have seen 0 for DI1
+                elif self.DI1 == 1:
+                    self.DI1_seen_1 = True  # Mark that we have seen 1 for DI1
 
-        except can.CanError as e:
-            print(f"CAN error: {str(e)}")
- 
-        finally:
-            self.busy = False  # Mark the system as not busy
-            received_frames[0x119].clear()
-            #self.function110_done = True
-            time.sleep(2)
-            #self.execute_next_function()
-            #print("Frames cleared for CAN ID 0x109")
+                # Check and update DI2 status
+                if self.DI2 == 0:
+                    self.DI2_seen_0 = True  # Mark that we have seen 0 for DI2
+                elif self.DI2 == 1:
+                    self.DI2_seen_1 = True  # Mark that we have seen 1 for DI2
 
+                # Check and update DI3 status
+                if self.DI3 == 0:
+                    self.DI3_seen_0 = True  # Mark that we have seen 0 for DI3
+                elif self.DI3 == 1:
+                    self.DI3_seen_1 = True  # Mark that we have seen 1 for DI3
+
+                # Use QTimer to periodically check if both 0 and 1 have been seen for each DI
+                self.timer = QTimer(self)
+                self.timer.timeout.connect(self.check_flags)  # Connect timeout to the check_flags function
+                self.timer.start(1000)  # Check every second (1000 ms)
+
+            except can.CanError as e:
+                print(f"CAN error: {str(e)}")
+    
+            finally:
+                self.busy = False  # Mark the system as not busy
+                received_frames[0x119].clear()
+                time.sleep(2)
+
+    def check_flags(self):
+        # This method will be called every second
+        print(f"Checking flags: DI1_seen_0={self.DI1_seen_0}, DI1_seen_1={self.DI1_seen_1}, DI2_seen_0={self.DI2_seen_0}, DI2_seen_1={self.DI2_seen_1}, DI3_seen_0={self.DI3_seen_0}, DI3_seen_1={self.DI3_seen_1}")
+
+        # Now check if both states 0 and 1 have been seen for each DI
+        if self.DI1_seen_0 and self.DI1_seen_1:
+            self.DI1_status = True
+        if self.DI2_seen_0 and self.DI2_seen_1:
+            self.DI2_status = True
+        if self.DI3_seen_0 and self.DI3_seen_1:
+            self.DI3_status = True
+
+        # Now check if all flags are True
+        if self.DI1_status and self.DI2_status and self.DI3_status:
+            self.timer.stop()  # Stop the timer when all flags are True
+            print('timer stopped')
+        
+            # Now that all DI states are confirmed (both 0 and 1), determine the result
+            if self.DI1_status and self.DI2_status and self.DI3_status:
+                self.ui.plainTextEdit_22.setPlainText("Pass")
+                self.ui.plainTextEdit_22.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: green""")
+            else:
+                self.ui.plainTextEdit_22.setPlainText("Fail")
+                self.ui.plainTextEdit_22.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: red""")
    
 
     def execute_next_function(self):
@@ -1184,7 +1231,7 @@ class MyClass(QMainWindow):
  
         # Logic to check the username and password
         if Operator is not None and QC_head is not None:
-            #self.ui.pushButton.clicked.connect(self.goToPage2)
+            self.ui.pushButton.clicked.connect(self.goToPage2)
             self.show_message("Login Successful", "Welcome, Operator!")
         else:
             self.show_message("Login Failed", "Invalid username or password. Please try again.")
@@ -1198,9 +1245,12 @@ class MyClass(QMainWindow):
         return ''.join(c for c in input_string if 31 < ord(c) < 127)
 
     def save_to_excel(self):
-        # Check if the file already exists
+        # Get the current date in YYYY-MM-DD format
+        current_date = datetime.now().strftime("%Y-%m-%d")
+
+        # Create a file path with the date appended to the filename
         current_directory = os.getcwd()
-        file_path = os.path.join(current_directory, "Final_Testing_DeviceStatus_{self.current_datetime}.xlsx")
+        file_path = os.path.join(current_directory, f"Final_Testing_DeviceStatus_{current_date}.xlsx")
 
         # If the file exists, load the existing workbook; otherwise, create a new one
         if os.path.exists(file_path):
@@ -1211,43 +1261,42 @@ class MyClass(QMainWindow):
             ws = wb.active
 
             # Set the headers for the columns (only if the file is being created for the first time)
-            headers = ['Date','Model','Operator', 'QC Head', 'IMEI', 'ICCID', 'Application Version', 'GSM Version', 
-                   'GPS Version', 'Mains vtg', 'Int_Bat vtg', 'GPS status', 'No.of Sat','CREG','CGREG','CSQ',
-                   'Operator','MQTT','No.Of Login packet','MEMS Xa','MEMS Ya','MEMS Za','Mains result','IntBat result'
-                   ,'Gps result','RTC']
+            headers = ['Date', 'Model', 'Operator', 'QC Head', 'IMEI', 'ICCID', 'Application Version', 'GSM Version',
+                   'GPS Version', 'Mains vtg', 'Int_Bat vtg', 'GPS status', 'No.of Sat', 'CREG', 'CGREG', 'CSQ',
+                   'Operator', 'MQTT', 'No.Of Login packet', 'MEMS Xa', 'MEMS Ya', 'MEMS Za', 'Mains result', 'IntBat result'
+                   ,'Gps result', 'RTC']
             ws.append(headers)  # Append headers as the first row
 
-        # Clean the data before inserting into the worksheet
+    # Clean the data before inserting into the worksheet
         data = [
-            self.clean_string(str(self.current_datetime)),
-            self.clean_string(str(self.model_name)),
-            self.clean_string(self.operator),
-            self.clean_string(self.qc_head),
-            self.clean_string(self.IMEI_ascii),
-            self.clean_string(self.ICCID_ascii),
-            self.clean_string(self.appln_ver),
-            self.clean_string(self.GSM_ver),
-            self.clean_string(self.Gps_ver),
-            self.clean_string(self.mains_vtg),
-            self.clean_string(self.Int_vtg),
-            self.clean_string(str(self.Gps_status)),
-            self.clean_string(str(self.No_of_Sat)),
-            self.clean_string(str(self.CREG)),
-            self.clean_string(str(self.CGREG)),
-            self.clean_string(str(self.CSQ)),
-            self.clean_string(str(self.operatorName)),
-            self.clean_string(str(self.MQTT_status)),
-            self.clean_string(str(self.No_of_LogInPacket)),
-            self.clean_string(str(self.frame1)),
-            self.clean_string(str(self.frame2)),
-            self.clean_string(str(self.frame5)),
-            self.clean_string(str(self.Mains_result)),
-            self.clean_string(str(self.IntVtg_result)),
-            self.clean_string(str(self.Gps_result)),
-            self.clean_string(str(self.RTC_result)),
-
+        self.clean_string(str(self.current_datetime)) if self.current_datetime is not None else '0',
+        self.clean_string(str(self.model_name)) if self.model_name is not None else '0',
+        self.clean_string(self.operator) if self.operator is not None else '0',
+        self.clean_string(self.qc_head) if self.qc_head is not None else '0',
+        self.clean_string(self.IMEI_ascii) if self.IMEI_ascii is not None else '0',
+        self.clean_string(self.ICCID_ascii) if self.ICCID_ascii is not None else '0',
+        self.clean_string(self.appln_ver) if self.appln_ver is not None else '0',
+        self.clean_string(self.GSM_ver) if self.GSM_ver is not None else '0',
+        self.clean_string(self.Gps_ver) if self.Gps_ver is not None else '0',
+        self.clean_string(self.mains_vtg) if self.mains_vtg is not None else '0',
+        self.clean_string(self.Int_vtg) if self.Int_vtg is not None else '0',
+        self.clean_string(str(self.Gps_status)) if self.Gps_status is not None else '0',
+        self.clean_string(str(self.No_of_Sat)) if self.No_of_Sat is not None else '0',
+        self.clean_string(str(self.CREG)) if self.CREG is not None else '0',
+        self.clean_string(str(self.CGREG)) if self.CGREG is not None else '0',
+        self.clean_string(str(self.CSQ)) if self.CSQ is not None else '0',
+        self.clean_string(str(self.operatorName)) if self.operatorName is not None else '0',
+        self.clean_string(str(self.MQTT_status)) if self.MQTT_status is not None else '0',
+        self.clean_string(str(self.No_of_LogInPacket)) if self.No_of_LogInPacket is not None else '0',
+        self.clean_string(str(self.frame1)) if self.frame1 is not None else '0',
+        self.clean_string(str(self.frame2)) if self.frame2 is not None else '0',
+        self.clean_string(str(self.frame5)) if self.frame5 is not None else '0',
+        self.clean_string(str(self.Mains_result)) if self.Mains_result is not None else '0',
+        self.clean_string(str(self.IntVtg_result)) if self.IntVtg_result is not None else '0',
+        self.clean_string(str(self.Gps_result)) if self.Gps_result is not None else '0',
+        self.clean_string(str(self.RTC_result)) if self.RTC_result is not None else '0',
         ]
-    
+
         # Append the data to the next available row
         ws.append(data)
 
@@ -1263,6 +1312,7 @@ class MyClass(QMainWindow):
         except Exception as e:
             print(f"Error saving data to Excel: {str(e)}")
             QMessageBox.warning(self, "Error", f"Failed to save data to Excel: {str(e)}")
+
 
     def clear_ui(self):
         
@@ -1308,8 +1358,6 @@ class MyClass(QMainWindow):
         self.ui.IntBat_input_2.setStyleSheet("background-color: white;")
         self.ui.Analog1_2.clear()
         self.ui.Analog1_2.setStyleSheet("background-color: white;")
-        self.ui.MEMS_INIT.clear()
-        self.ui.MEMS_INIT.setStyleSheet("background-color: white;")
         self.ui.MEMS_Xa.clear()
         self.ui.MEMS_Xa.setStyleSheet("background-color: white;")
         self.ui.MEMS_Ya.clear()
@@ -1326,6 +1374,22 @@ class MyClass(QMainWindow):
         self.ui.plainTextEdit_28.setStyleSheet("background-color: white;")
         self.ui.plainTextEdit_21.clear()
         self.ui.plainTextEdit_21.setStyleSheet("background-color: white;")
+        self.ui.DI1_H_3.clear()
+        self.ui.DI1_H_3.setStyleSheet("background-color: white;")
+        self.ui.IGN_H.clear()
+        self.ui.IGN_H.setStyleSheet("background-color: white;")
+        self.ui.DI1_H_6.clear()
+        self.ui.DI1_H_6.setStyleSheet("background-color: white;")
+        self.ui.DI1_H_7.clear()
+        self.ui.DI1_H_7.setStyleSheet("background-color: white;")
+        self.ui.DI1_H_4.clear()
+        self.ui.DI1_H_4.setStyleSheet("background-color: white;")
+        self.ui.DI1_H_5.clear()
+        self.ui.DI1_H_5.setStyleSheet("background-color: white;")
+        self.ui.DI1_H_8.clear()
+        self.ui.DI1_H_8.setStyleSheet("background-color: white;")
+        self.ui.DI_H.clear()
+        self.ui.DI_H.setStyleSheet("background-color: white;")
 
 
         
