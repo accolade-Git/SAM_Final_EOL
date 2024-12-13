@@ -71,6 +71,12 @@ class MyClass(QMainWindow):
         self.IntVtg_result = None
         self.Gps_result = None
         self.RTC_result =None
+        self.GSM_result = None
+        self.DIs_result = None
+        self.IGN_result = None
+        self.Tamper_result = None
+        self.MEMS_result = None
+        self.MQTT_result = None
         self.DI1_H =None
         self.DI1_L= None
         self.IGN = None
@@ -83,6 +89,12 @@ class MyClass(QMainWindow):
         self.DI2_seen_1 = False
         self.DI3_seen_0 = False
         self.DI3_seen_1 = False
+        self.CREG_found = False
+        self.CGREG_found = False
+        self.CSQ_found = False
+        self.operator_found = False
+        self.IGN_seen_0 = False
+        self.IGN_seen_1 = False
 
 
 
@@ -737,6 +749,7 @@ class MyClass(QMainWindow):
                     self.ui.CSQ.setStyleSheet("background-color: red;")
                 else:
                     self.ui.CSQ.setStyleSheet("background-color: white;")
+                    self.CREG_found = True
 
                 self.CGREG = message.data[2]
                 print('CGREG:',self.CGREG)
@@ -745,6 +758,7 @@ class MyClass(QMainWindow):
                     self.ui.CGREG.setStyleSheet("background-color: red;")
                 else:
                     self.ui.CGREG.setStyleSheet("background-color: white;")
+                    self.CGREG_found =True
 
                 self.CSQ =message.data[3]
                 print('CSQ',self.CSQ)
@@ -753,10 +767,20 @@ class MyClass(QMainWindow):
                     self.ui.CREG.setStyleSheet("background-color: red;")
                 else:
                     self.ui.CREG.setStyleSheet("background-color: white;")
+                    self.CSQ_found =True
+
+                if self.CREG_found and self.CGREG_found and self.CSQ_found and self.operator_found:
+                    self.ui.plainTextEdit_24.setPlainText("Pass")
+                    self.ui.plainTextEdit_24.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: green""")
+                else:
+                    self.ui.plainTextEdit_24.setPlainText("Fail")
+                    self.ui.plainTextEdit_24.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: red""")
 
                 self.ui.plainTextEdit_12.appendPlainText(f"CREG: {str(self.CREG)}\n")
                 self.ui.plainTextEdit_12.appendPlainText(f"CGREG: {str(self.CGREG)}\n")
                 self.ui.plainTextEdit_12.appendPlainText(f"CSQ : {str(self.CSQ)}\n")
+
+                self.GSM_result = self.ui.plainTextEdit_24.toPlainText()
             
             else:
                 # If no message is received within the timeout period
@@ -817,6 +841,7 @@ class MyClass(QMainWindow):
                   
                   if self.operatorName == 'AIRTEL 4G':
                       self.ui.Operator.setStyleSheet("background-color: white;")
+                      self.operator_found = True
                   else:
                       self.ui.Operator.setStyleSheet("background-color: red;")
                       
@@ -866,9 +891,13 @@ class MyClass(QMainWindow):
                 if self.MQTT_status == 0 or self.MQTT_status == 255:
                     self.ui.Analog1_2.setStyleSheet("background-color: red;")
                     self.ui.Analog1_2.setPlainText(str('0'))
+                    self.ui.plainTextEdit_31.setPlainText("Fail")
+                    self.ui.plainTextEdit_31.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: red""")
                 else:
                     self.ui.Analog1_2.setStyleSheet("background-color: white;")
                     self.ui.Analog1_2.setPlainText(str(self.MQTT_status))
+                    self.ui.plainTextEdit_31.setPlainText("Pass")
+                    self.ui.plainTextEdit_31.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: white""")
 
                 self.No_of_LogInPacket = message.data[2]
                 print('No. of Login Packet:',self.No_of_LogInPacket)
@@ -884,6 +913,8 @@ class MyClass(QMainWindow):
             else:
                 # If no message is received within the timeout period
                 print(f"Timeout waiting for message for CAN ID 0x109. No response received.")
+
+            self.MQTT_result = self.ui.plainTextEdit_31.toPlainText()
 
         except can.CanError as e:
             print(f"CAN error: {str(e)}")
@@ -979,6 +1010,14 @@ class MyClass(QMainWindow):
             self.ui.MEMS_Za.setPlainText(self.frame5)
             self.ui.plainTextEdit_12.appendPlainText(f"Accelerometer data: {self.frame1}, {self.frame2}, {self.frame5}")
 
+            if self.frame1 and self.frame2 and self.frame5:
+                self.ui.plainTextEdit_25.setPlainText("Pass")
+                self.ui.plainTextEdit_25.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: green""")
+            else:
+                self.ui.plainTextEdit_25.setPlainText("Fail")
+                self.ui.plainTextEdit_25.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: red""")
+
+            self.MEMS_result = self.ui.plainTextEdit_25.toPlainText()
 
         except can.CanError as e:
             print(f"CAN error: {str(e)}")
@@ -1094,6 +1133,17 @@ class MyClass(QMainWindow):
                     # If no message is received within the timeout period
                     print(f"Timeout waiting for message for CAN ID 0x119. No response received.")
 
+                if self.tamper != 0:
+                    self.ui.Tamp_L.setStyleSheet("background-color : red")
+                    self.ui.plainTextEdit_26.setPlainText("Fail")
+                    self.ui.plainTextEdit_26.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: red""")
+                else:
+                    self.ui.Tamp_L.setStyleSheet("background-color : white")
+                    self.ui.plainTextEdit_26.setPlainText("Pass")
+                    self.ui.plainTextEdit_26.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: green""")
+
+                self.Tamper_result = self.ui.plainTextEdit_26.toPlainText()
+
                 # Update UI fields if they are empty
                 if not self.ui.DI1_H_3.toPlainText():
                     self.ui.DI1_H_3.setPlainText(str(self.IGN))
@@ -1119,6 +1169,7 @@ class MyClass(QMainWindow):
                 self.ui.plainTextEdit_12.appendPlainText(f"Tamper: {str(self.tamper)}\n")
                 self.ui.plainTextEdit_12.appendPlainText(f"DI1,DI2,DI3: {self.DI1}, {self.DI2}, {self.DI3}")
 
+                
                 # Track whether we have seen both states (0 and 1) for each DI
                 # Check and update DI1 status
                 if self.DI1 == 0:
@@ -1138,6 +1189,11 @@ class MyClass(QMainWindow):
                 elif self.DI3 == 1:
                     self.DI3_seen_1 = True  # Mark that we have seen 1 for DI3
 
+                if self.IGN == 0:
+                    self.IGN_seen_0 =True
+                else:
+                    self.IGN_seen_1 = True
+
                 # Use QTimer to periodically check if both 0 and 1 have been seen for each DI
                 self.timer = QTimer(self)
                 self.timer.timeout.connect(self.check_flags)  # Connect timeout to the check_flags function
@@ -1153,15 +1209,7 @@ class MyClass(QMainWindow):
 
     def check_flags(self):
         # This method will be called every second
-        print(f"Checking flags: DI1_seen_0={self.DI1_seen_0}, DI1_seen_1={self.DI1_seen_1}, DI2_seen_0={self.DI2_seen_0}, DI2_seen_1={self.DI2_seen_1}, DI3_seen_0={self.DI3_seen_0}, DI3_seen_1={self.DI3_seen_1}")
-
-        # Now check if both states 0 and 1 have been seen for each DI
-        if self.DI1_seen_0 and self.DI1_seen_1:
-            self.DI1_status = True
-        if self.DI2_seen_0 and self.DI2_seen_1:
-            self.DI2_status = True
-        if self.DI3_seen_0 and self.DI3_seen_1:
-            self.DI3_status = True
+        #print(f"Checking flags: DI1_seen_0={self.DI1_seen_0}, DI1_seen_1={self.DI1_seen_1}, DI2_seen_0={self.DI2_seen_0}, DI2_seen_1={self.DI2_seen_1}, DI3_seen_0={self.DI3_seen_0}, DI3_seen_1={self.DI3_seen_1}")
 
         # Now check if all flags are True
         if self.DI1_status and self.DI2_status and self.DI3_status:
@@ -1175,7 +1223,23 @@ class MyClass(QMainWindow):
             else:
                 self.ui.plainTextEdit_22.setPlainText("Fail")
                 self.ui.plainTextEdit_22.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: red""")
-   
+        
+
+        if self.IGN_seen_0 and self.IGN_seen_1:
+            self.timer.stop()
+            if self.IGN_seen_0 and self.IGN_seen_1:
+
+                self.ui.plainTextEdit_30.setPlainText("Pass")
+                self.ui.plainTextEdit_30.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: green""")
+            else:
+                self.ui.plainTextEdit_30.setPlainText("Fail")
+                self.ui.plainTextEdit_30.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: red""")
+    
+        self.DIs_result = self.ui.plainTextEdit_22.toPlainText()
+        self.IGN_result = self.ui.plainTextEdit_30.toPlainText()
+
+    
+
 
     def execute_next_function(self):
         """Check which function is done and call the next one."""
@@ -1264,37 +1328,43 @@ class MyClass(QMainWindow):
             headers = ['Date', 'Model', 'Operator', 'QC Head', 'IMEI', 'ICCID', 'Application Version', 'GSM Version',
                    'GPS Version', 'Mains vtg', 'Int_Bat vtg', 'GPS status', 'No.of Sat', 'CREG', 'CGREG', 'CSQ',
                    'Operator', 'MQTT', 'No.Of Login packet', 'MEMS Xa', 'MEMS Ya', 'MEMS Za', 'Mains result', 'IntBat result'
-                   ,'Gps result', 'RTC']
+                   ,'Gps result', 'RTC','GSM result','DIs result','IGN result','Tamper result','MEMS result','MQTT result']
             ws.append(headers)  # Append headers as the first row
 
     # Clean the data before inserting into the worksheet
         data = [
-        self.clean_string(str(self.current_datetime)) if self.current_datetime is not None else '0',
-        self.clean_string(str(self.model_name)) if self.model_name is not None else '0',
-        self.clean_string(self.operator) if self.operator is not None else '0',
-        self.clean_string(self.qc_head) if self.qc_head is not None else '0',
-        self.clean_string(self.IMEI_ascii) if self.IMEI_ascii is not None else '0',
-        self.clean_string(self.ICCID_ascii) if self.ICCID_ascii is not None else '0',
-        self.clean_string(self.appln_ver) if self.appln_ver is not None else '0',
-        self.clean_string(self.GSM_ver) if self.GSM_ver is not None else '0',
-        self.clean_string(self.Gps_ver) if self.Gps_ver is not None else '0',
-        self.clean_string(self.mains_vtg) if self.mains_vtg is not None else '0',
-        self.clean_string(self.Int_vtg) if self.Int_vtg is not None else '0',
-        self.clean_string(str(self.Gps_status)) if self.Gps_status is not None else '0',
-        self.clean_string(str(self.No_of_Sat)) if self.No_of_Sat is not None else '0',
-        self.clean_string(str(self.CREG)) if self.CREG is not None else '0',
-        self.clean_string(str(self.CGREG)) if self.CGREG is not None else '0',
-        self.clean_string(str(self.CSQ)) if self.CSQ is not None else '0',
-        self.clean_string(str(self.operatorName)) if self.operatorName is not None else '0',
-        self.clean_string(str(self.MQTT_status)) if self.MQTT_status is not None else '0',
-        self.clean_string(str(self.No_of_LogInPacket)) if self.No_of_LogInPacket is not None else '0',
-        self.clean_string(str(self.frame1)) if self.frame1 is not None else '0',
-        self.clean_string(str(self.frame2)) if self.frame2 is not None else '0',
-        self.clean_string(str(self.frame5)) if self.frame5 is not None else '0',
-        self.clean_string(str(self.Mains_result)) if self.Mains_result is not None else '0',
-        self.clean_string(str(self.IntVtg_result)) if self.IntVtg_result is not None else '0',
-        self.clean_string(str(self.Gps_result)) if self.Gps_result is not None else '0',
-        self.clean_string(str(self.RTC_result)) if self.RTC_result is not None else '0',
+        self.clean_string(str(self.current_datetime)) if self.current_datetime is not None else 'Not found',
+        self.clean_string(str(self.model_name)) if self.model_name is not None else 'Not found',
+        self.clean_string(self.operator) if self.operator is not None else 'Not found',
+        self.clean_string(self.qc_head) if self.qc_head is not None else 'Not found',
+        self.clean_string(self.IMEI_ascii) if self.IMEI_ascii is not None else 'Not found',
+        self.clean_string(self.ICCID_ascii) if self.ICCID_ascii is not None else 'Not found',
+        self.clean_string(self.appln_ver) if self.appln_ver is not None else 'Not found',
+        self.clean_string(self.GSM_ver) if self.GSM_ver is not None else 'Not found ',
+        self.clean_string(self.Gps_ver) if self.Gps_ver is not None else 'Not found',
+        self.clean_string(self.mains_vtg) if self.mains_vtg is not None else 'Not found',
+        self.clean_string(self.Int_vtg) if self.Int_vtg is not None else 'Not found',
+        self.clean_string(str(self.Gps_status)) if self.Gps_status is not None else 'Not found',
+        self.clean_string(str(self.No_of_Sat)) if self.No_of_Sat is not None else 'Not found',
+        self.clean_string(str(self.CREG)) if self.CREG is not None else 'Not found',
+        self.clean_string(str(self.CGREG)) if self.CGREG is not None else 'Not found',
+        self.clean_string(str(self.CSQ)) if self.CSQ is not None else 'Not found',
+        self.clean_string(str(self.operatorName)) if self.operatorName is not None else 'Not found',
+        self.clean_string(str(self.MQTT_status)) if self.MQTT_status is not None else 'Not found',
+        self.clean_string(str(self.No_of_LogInPacket)) if self.No_of_LogInPacket is not None else 'Not found',
+        self.clean_string(str(self.frame1)) if self.frame1 is not None else 'Not found',
+        self.clean_string(str(self.frame2)) if self.frame2 is not None else 'Not found',
+        self.clean_string(str(self.frame5)) if self.frame5 is not None else 'Not found',
+        self.clean_string(str(self.Mains_result)) if self.Mains_result is not None else 'Not found',
+        self.clean_string(str(self.IntVtg_result)) if self.IntVtg_result is not None else 'Not found',
+        self.clean_string(str(self.Gps_result)) if self.Gps_result is not None else 'Not found',
+        self.clean_string(str(self.RTC_result)) if self.RTC_result is not None else 'Not found',
+        self.clean_string(str(self.GSM_result)) if self.GSM_result is not None else 'Not found',
+        self.clean_string(str(self.DIs_result)) if self.DIs_result is not None else 'Not found',
+        self.clean_string(str(self.IGN_result)) if self.IGN_result is not None else 'Not found',
+        self.clean_string(str(self.Tamper_result)) if self.Tamper_result is not None else 'Not found',
+        self.clean_string(str(self.MEMS_result)) if self.MEMS_result is not None else 'Not found',
+        self.clean_string(str(self.MQTT_result)) if self.MQTT_result is not None else 'Not found'
         ]
 
         # Append the data to the next available row
@@ -1390,6 +1460,18 @@ class MyClass(QMainWindow):
         self.ui.DI1_H_8.setStyleSheet("background-color: white;")
         self.ui.DI_H.clear()
         self.ui.DI_H.setStyleSheet("background-color: white;")
+        self.ui.plainTextEdit_24.clear()
+        self.ui.plainTextEdit_24.setStyleSheet("background-color: white;")
+        self.ui.plainTextEdit_22.clear()
+        self.ui.plainTextEdit_22.setStyleSheet("background-color: white;")
+        self.ui.plainTextEdit_30.clear()
+        self.ui.plainTextEdit_30.setStyleSheet("background-color: white;")
+        self.ui.plainTextEdit_26.clear()
+        self.ui.plainTextEdit_26.setStyleSheet("background-color: white;")
+        self.ui.plainTextEdit_25.clear()
+        self.ui.plainTextEdit_25.setStyleSheet("background-color: white;")
+        self.ui.plainTextEdit_31.clear()
+        self.ui.plainTextEdit_31.setStyleSheet("background-color: white;")
 
 
         
