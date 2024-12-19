@@ -20,7 +20,7 @@ from finalTesting import Ui_FinalTestingUtility
 import resources_rc
 
 # Expected CAN IDs and their frame counts
-expected_frame_counts = {0x100: 3, 0x101 :3, 0x103 : 3, 0x105 :2, 0x106 :3 , 0x115 : 1, 0x116 : 1,0x109 :1,0x110:1, 0x112 :2,0x113 :1,0x114:4
+expected_frame_counts = {0x100: 3, 0x101 :3, 0x103 : 4, 0x105 :2, 0x106 :3 , 0x115 : 1, 0x116 : 1,0x109 :1,0x110:1, 0x112 :2,0x113 :1,0x114:4
                          ,0x102 : 1,0x119 :1}
 
 # Initialize received_frames with empty lists for each CAN ID
@@ -37,7 +37,7 @@ class MyClass(QMainWindow):
         self.stackedWidget = self.ui.stackedWidget
         self.bus = None
         self.busy = False
-        self.ui.pushButton.clicked.connect(self.goToPage2)
+        #self.ui.pushButton.clicked.connect(self.goToPage2)
         self.ui.pushButton_8.clicked.connect(self.start_functions)
         self.ui.pushButton_2.clicked.connect(self.save_to_excel)
         self.ui.pushButton.clicked.connect(self.on_button_click)
@@ -375,13 +375,13 @@ class MyClass(QMainWindow):
                 #print(f"Reassembled message for CAN ID 0x100: {complete_message.hex()}")
  
                 try:
-                  self.appln_ver = complete_message.decode('ascii')  # Decode bytes into ASCII string
+                  self.appln_ver = complete_message.decode('ascii').rstrip('\x00').strip() # Decode bytes into ASCII string
                   #print('appln ver ASCII :',self.appln_ver)
-                  print(f"Application version: {self.appln_ver}")
+                  print(f"Application version: {repr(self.appln_ver)}")
                   self.ui.plainTextEdit_8.setPlainText(self.appln_ver)
                   self.ui.plainTextEdit_12.appendPlainText(f"Application Version : {self.appln_ver}\n")
 
-                  if self.appln_ver != 'SAM01_APP_0.0.6_TST06':
+                  if self.appln_ver != 'SAMPARK_LITE_0.0.1_TST04':
                       self.ui.plainTextEdit_8.setStyleSheet("background-color: red;")
                   else:
                       self.ui.plainTextEdit_8.setStyleSheet("background-color: white;")
@@ -437,7 +437,7 @@ class MyClass(QMainWindow):
                 #print(f"Complete for CAN ID 0x105: {complete_message.hex()}")
  
                 try:
-                  self.Gps_ver = complete_message.decode('ascii')  # Decode bytes into ASCII string
+                  self.Gps_ver = complete_message.decode('ascii').rstrip('\x00').strip()  # Decode bytes into ASCII string
                   print('GPS ver ASCII :',self.Gps_ver)
                   self.ui.plainTextEdit_5.setPlainText(self.Gps_ver)
                   self.ui.plainTextEdit_12.appendPlainText(f"GPS Version : {self.Gps_ver}\n")
@@ -501,7 +501,7 @@ class MyClass(QMainWindow):
                 #print(f"Complete message for CAN ID 0x106: {complete_message.hex()}")
  
                 try:
-                  self.GSM_ver = complete_message.decode('ascii')  # Decode bytes into ASCII string
+                  self.GSM_ver = complete_message.decode('ascii').rstrip('\x00').strip()
                   print('GSM ver ASCII :',{repr(self.GSM_ver)})
                   self.ui.plainTextEdit_6.setPlainText(self.GSM_ver)
                   self.ui.plainTextEdit_12.appendPlainText(f"GSM Version : {self.GSM_ver}\n")
@@ -833,7 +833,7 @@ class MyClass(QMainWindow):
                 #print(f"Complete for CAN ID 0x112: {complete_message.hex()}")
  
                 try:
-                  self.operatorName = complete_message.decode('ascii')  # Decode bytes into ASCII string
+                  self.operatorName = complete_message.decode('ascii').rstrip('\x00').strip()  # Decode bytes into ASCII string
                   print('Operator Name :',{repr(self.operatorName)})
                   self.ui.Operator.setPlainText(self.operatorName)
                   self.ui.plainTextEdit_12.appendPlainText(f"Operator Name : {self.operatorName}\n")
@@ -897,7 +897,7 @@ class MyClass(QMainWindow):
                     self.ui.Analog1_2.setStyleSheet("background-color: white;")
                     self.ui.Analog1_2.setPlainText(str(self.MQTT_status))
                     self.ui.plainTextEdit_31.setPlainText("Pass")
-                    self.ui.plainTextEdit_31.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: white""")
+                    self.ui.plainTextEdit_31.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: green""")
 
                 self.No_of_LogInPacket = message.data[2]
                 print('No. of Login Packet:',self.No_of_LogInPacket)
@@ -938,79 +938,59 @@ class MyClass(QMainWindow):
 
         self.busy = True  # Mark the system as busy
         try:
+            # Create and send the message
             msg = can.Message(arbitration_id=0x114, data=[0, 0, 0, 0, 0, 0, 0, 0], is_extended_id=False)
-        
-            # Send the message
             self.bus.send(msg)
 
             # Reset frames before starting to receive
             self.frame1 = None
             self.frame2 = None
             self.frame3 = None
-            self.frame4 = None
-            self.frame5 =None
-
-
-            
 
             # Create a list to keep track of frames received so far
             received_frames = 0
 
             # Wait for the response
+            all_frames = []  # Initialize an empty list to collect all frames
+
+            # Try receiving all frames
             for i in range(expected_frame_counts[0x114]):  # Ensure it defaults to 0 if the key is missing
                 message = self.bus.recv(timeout=2)  # 2-second timeout for each frame
                 if message:
-                    #print(f"Frame received for CAN ID 0x114: {message.data.hex()}\n")
+                    # Extract the frame, skipping the 0th byte
                     frame = message.data[1:].hex()  # Skip the 0th byte and convert the rest to hex
+                    all_frames.append(frame)  # Append the frame to the list
 
-                    try:
-                        # Convert hex string to bytes
-                        bytes_frame = bytes.fromhex(frame)
+            # Join all frames into a single string and print
+            frames = ''.join(all_frames)
+            print("All Frames:", frames)
 
-                        # Decode to ASCII, ignoring invalid characters
-                        self.converted_frame = bytes_frame.decode('ascii', errors='ignore')
-                        #print(f"Converted frame: {converted_frame}\n")
+            # Convert the concatenated hex frames into bytes
+            byte_data = bytes.fromhex(frames)
 
-                        # Ensure each frame is assigned only once
-                        if self.frame1 is None:
-                            self.frame1 = self.converted_frame
-                            #print(f"Frame 1: {self.frame1}")
-                        elif self.frame2 is None:
-                            self.frame2 = self.converted_frame
-                            #print(f"Frame 2: {self.frame2}")
-                        elif self.frame3 is None:
-                            self.frame3 = self.converted_frame
-                            #print(f"Frame 3: {self.frame3}")
-                        elif self.frame4 is None:
-                            self.frame4 = self.converted_frame
-                            #print(f"Frame 4: {self.frame4}")
+            # Decode the byte data into an ASCII string
+            ascii_string = byte_data.decode('ascii', errors='ignore')
+            print("ascii_string:", ascii_string)
 
-                        # Increase the count of received frames
-                        received_frames += 1
+            # Store the ASCII string in 3 frames, each having a part of the string
+            frame_size = len(ascii_string) // 3  # Divide the string into 3 equal parts
 
-                    except ValueError as e:
-                        print(f"Error decoding frame: {e}")
-                else:
-                    print(f"Timeout waiting for message for CAN ID 0x114. No response received.")
+            # Split the string into three parts, ensuring no part is empty
+            self.frame1 = ascii_string[:frame_size]
+            self.frame2 = ascii_string[frame_size:frame_size*2]
+            self.frame3 = ascii_string[frame_size*2:]  # The remaining part goes into frame3
 
-                # If all expected frames are received, break the loop
-                if received_frames >= 4:
-                    break
-
-            # If frames were received correctly
-            print(f"Frame 1: {self.frame1}")
-            print(f"Frame 2: {self.frame2}")
-            print(f"Frame 3: {self.frame3}")
-            print(f"Frame 4: {self.frame4}")
-            self.frame5= str(self.frame3)+ str(self.frame4)
-            print('frame 5',self.frame5)
+            # Print the frames for verification
+            print("Frame 1:", self.frame1)
+            print("Frame 2:", self.frame2)
+            print("Frame 3:", self.frame3)
 
             self.ui.MEMS_Xa.setPlainText(self.frame1)
             self.ui.MEMS_Ya.setPlainText(self.frame2)
-            self.ui.MEMS_Za.setPlainText(self.frame5)
-            self.ui.plainTextEdit_12.appendPlainText(f"Accelerometer data: {self.frame1}, {self.frame2}, {self.frame5}")
+            self.ui.MEMS_Za.setPlainText(self.frame3)
+            self.ui.plainTextEdit_12.appendPlainText(f"Accelerometer data: {self.frame1}, {self.frame2}, {self.frame3}")
 
-            if self.frame1 and self.frame2 and self.frame5:
+            if self.frame1 and self.frame2 and self.frame3:
                 self.ui.plainTextEdit_25.setPlainText("Pass")
                 self.ui.plainTextEdit_25.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: green""")
             else:
@@ -1019,14 +999,23 @@ class MyClass(QMainWindow):
 
             self.MEMS_result = self.ui.plainTextEdit_25.toPlainText()
 
-        except can.CanError as e:
-            print(f"CAN error: {str(e)}")
+        except Exception as e:
+            # Handle any exceptions that occur during the process
+            print(f"An error occurred: {e}")
 
+        # Optionally, set `self.busy` to False if an error occurs to allow retries
+            self.busy = False
+
+            
         finally:
             self.busy = False  # Mark the system as not busy
             self.function114_done = True
             time.sleep(2)
             self.execute_next_function()
+
+
+
+
 
     def fun_0x102(self):
         if self.busy:  # Check if the system is busy
@@ -1238,6 +1227,7 @@ class MyClass(QMainWindow):
         self.DIs_result = self.ui.plainTextEdit_22.toPlainText()
         self.IGN_result = self.ui.plainTextEdit_30.toPlainText()
 
+        
     
 
 
@@ -1754,12 +1744,6 @@ class MyClass(QMainWindow):
 
        
         
-
-   
-    
-
-   
-    
 
 # Entry point of the program
 if __name__ == "__main__":
