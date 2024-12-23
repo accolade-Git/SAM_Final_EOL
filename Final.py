@@ -20,7 +20,7 @@ from finalTesting import Ui_FinalTestingUtility
 import resources_rc
 
 # Expected CAN IDs and their frame counts
-expected_frame_counts = {0x100: 3, 0x101 :3, 0x103 : 4, 0x105 :2, 0x106 :3 , 0x115 : 1, 0x116 : 1,0x109 :1,0x110:1, 0x112 :2,0x113 :1,0x114:4
+expected_frame_counts = {0x100: 3, 0x101 :3, 0x103 : 4, 0x105 :3, 0x106 :3 , 0x115 : 1, 0x116 : 1,0x109 :1,0x110:1, 0x112 :2,0x113 :1,0x114:4
                          ,0x102 : 1,0x119 :1}
 
 # Initialize received_frames with empty lists for each CAN ID
@@ -95,6 +95,9 @@ class MyClass(QMainWindow):
         self.operator_found = False
         self.IGN_seen_0 = False
         self.IGN_seen_1 = False
+        self.No_of_Sat2 = None
+        self.concatenated_hex = None
+        self.concatenated_satellites_decimal = None
 
 
 
@@ -297,6 +300,7 @@ class MyClass(QMainWindow):
             # Wait for the response
             for i in range(expected_frame_counts[0x101]):
                 message = self.bus.recv(timeout=2)  # 1 second timeout for each frame
+                print("hex ICCID received :",message)
                 if message:
                     #print(f"Received message from CAN ID {hex(message.arbitration_id)}: {message.data.hex()}")
                     received_frames[0x101].append(message)
@@ -315,7 +319,7 @@ class MyClass(QMainWindow):
  
                 try:
                   self.ICCID_ascii = ICCID.decode('ascii')  # Decode bytes into ASCII string
-                  print(f"Extracted IMEI (ASCII): {self.ICCID_ascii}")
+                  print(f"Extracted ICCID (ASCII): {self.ICCID_ascii}")
                   self.ui.plainTextEdit_11.setPlainText(self.ICCID_ascii)
                   self.ui.plainTextEdit_12.appendPlainText(f"ICCID : {self.ICCID_ascii}\n")
 
@@ -381,7 +385,7 @@ class MyClass(QMainWindow):
                   self.ui.plainTextEdit_8.setPlainText(self.appln_ver)
                   self.ui.plainTextEdit_12.appendPlainText(f"Application Version : {self.appln_ver}\n")
 
-                  if self.appln_ver != 'SAMPARK_LITE_0.0.1_TST04':
+                  if self.appln_ver != 'SAM01_LITE_PROD_0.0.1_TST01':
                       self.ui.plainTextEdit_8.setStyleSheet("background-color: red;")
                   else:
                       self.ui.plainTextEdit_8.setStyleSheet("background-color: white;")
@@ -529,6 +533,7 @@ class MyClass(QMainWindow):
             #print("Frames cleared for CAN ID 0x106")
 
     def fun_0x115(self):
+        print('115 called')
         if self.busy:  # Check if the system is busy
             print("System is busy, please wait...")
             return
@@ -549,6 +554,7 @@ class MyClass(QMainWindow):
 
             # Wait for a response with a timeout (e.g., 2 seconds)
             message = self.bus.recv(timeout=2)  # 2 seconds timeout for response
+            print('hex value of mains :', message)
 
             if message:
                 exttracted_mains = message.data[1:]
@@ -650,6 +656,7 @@ class MyClass(QMainWindow):
             #print("Frames cleared for CAN ID 0x116")
 
     def fun_0x109(self):
+        print('109 called')
         if self.busy:  # Check if the system is busy
             print("System is busy, please wait...")
             return
@@ -672,15 +679,29 @@ class MyClass(QMainWindow):
             message = self.bus.recv(timeout=2)  # 2 seconds timeout for response
 
             if message:
+                # Get GPS status and display it
                 self.Gps_status = message.data[1]
-                print('Gps status :',self.Gps_status)
+                print('Gps status :', self.Gps_status)
                 self.ui.Operator_2.setPlainText(str(self.Gps_status))
-                self.No_of_Sat = message.data[2]
-                print('No. of sat:',self.No_of_Sat)
-                #self.ui.NoOf_satellite.setPlainText(str(self.No_of_Sat))
+    
+                # Get the two hex values for the number of satellites
+                self.No_of_Sat = hex(message.data[2])
+                print('1st byte of no. of sat', self.No_of_Sat)
+                self.No_of_Sat2 = hex(message.data[3])
+                print('2nd byte of no. of sat', self.No_of_Sat2)
+    
+                # Concatenate the two hex values (removing the '0x' part before concatenation)
+                self.concatenated_hex = self.No_of_Sat[2:] + self.No_of_Sat2[2:]
+                print('Concatenated hex value:', self.concatenated_hex)
+    
+                # Convert the concatenated hex string to a decimal value
+                self.concatenated_satellites_decimal = int(self.concatenated_hex, 16)
+                print('No. of sat (Decimal):', self.concatenated_satellites_decimal)
+    
+                # Update the UI with GPS status and number of satellites
                 self.ui.plainTextEdit_12.appendPlainText(f"GPS status: {str(self.Gps_status)}\n")
-                self.ui.plainTextEdit_12.appendPlainText(f"No. of Satellite: {str(self.No_of_Sat)}\n")
-            
+                self.ui.plainTextEdit_12.appendPlainText(f"No. of Satellite: {str(self.concatenated_satellites_decimal)}\n")
+    
             else:
                 # If no message is received within the timeout period
                 print(f"Timeout waiting for message for CAN ID 0x109. No response received.")
@@ -694,11 +715,11 @@ class MyClass(QMainWindow):
                 self.ui.plainTextEdit_28.setPlainText("Pass")
                 self.ui.plainTextEdit_28.setStyleSheet("""Font-size:16px ; font-weight : Bold;background-color:green""")
 
-            if self.No_of_Sat ==3000 or self.No_of_Sat == 184:
+            if self.concatenated_satellites_decimal ==3000 or self.concatenated_satellites_decimal == 184:
                 self.ui.NoOf_satellite.setPlainText(str('0'))
                 self.ui.NoOf_satellite.setStyleSheet("background-color: red;")
             else:
-                self.ui.NoOf_satellite.setPlainText(str(self.No_of_Sat))
+                self.ui.NoOf_satellite.setPlainText(str(self.concatenated_satellites_decimal))
                 self.ui.NoOf_satellite.setStyleSheet("background-color: white;")
 
             self.Gps_result = self.ui.plainTextEdit_28.toPlainText()
@@ -956,6 +977,7 @@ class MyClass(QMainWindow):
             # Try receiving all frames
             for i in range(expected_frame_counts[0x114]):  # Ensure it defaults to 0 if the key is missing
                 message = self.bus.recv(timeout=2)  # 2-second timeout for each frame
+                print('recived frames',message)
                 if message:
                     # Extract the frame, skipping the 0th byte
                     frame = message.data[1:].hex()  # Skip the 0th byte and convert the rest to hex
