@@ -1,4 +1,4 @@
-import ServerData
+
 import can
 import time
 import binascii
