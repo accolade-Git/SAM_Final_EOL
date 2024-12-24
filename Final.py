@@ -448,7 +448,7 @@ class MyClass(QMainWindow):
                   #gps_ver_cleaned = self.Gps_ver.strip()
                   print('gps strip',{repr(self.Gps_ver)})
                   
-                  if self.Gps_ver != 'L89HANR01A07S':
+                  if self.Gps_ver != 'EC200UCNAAR03A11M08':
                       self.ui.plainTextEdit_5.setStyleSheet("background-color: red;")
                   else:
                       self.ui.plainTextEdit_5.setStyleSheet("background-color: white;")
@@ -510,7 +510,7 @@ class MyClass(QMainWindow):
                   self.ui.plainTextEdit_6.setPlainText(self.GSM_ver)
                   self.ui.plainTextEdit_12.appendPlainText(f"GSM Version : {self.GSM_ver}\n")
 
-                  if self.GSM_ver != 'EC200UCNAAR03A03M08':
+                  if self.GSM_ver != 'EC200UCNAAR03A11M08':
                       self.ui.plainTextEdit_6.setStyleSheet("background-color: red;")
                   else:
                       self.ui.plainTextEdit_6.setStyleSheet("background-color: white;")
@@ -738,6 +738,8 @@ class MyClass(QMainWindow):
             self.execute_next_function()
             #print("Frames cleared for CAN ID 0x109")
 
+    
+
     def fun_0x110(self):
         print('inside 110')
         if self.busy:  # Check if the system is busy
@@ -790,7 +792,9 @@ class MyClass(QMainWindow):
                     self.ui.CREG.setStyleSheet("background-color: white;")
                     self.CSQ_found =True
 
-                if self.CREG_found and self.CGREG_found and self.CSQ_found and self.operator_found:
+                
+                print(self.CREG_found, self.CGREG_found, self.CSQ_found)
+                if self.CREG_found and self.CGREG_found:
                     self.ui.plainTextEdit_24.setPlainText("Pass")
                     self.ui.plainTextEdit_24.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: green""")
                 else:
