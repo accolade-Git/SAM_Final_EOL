@@ -17,7 +17,7 @@
    <widget class="QStackedWidget" name="stackedWidget">
     <property name="geometry">
      <rect>
-      <x>-260</x>
+      <x>-270</x>
       <y>0</y>
       <width>1501</width>
       <height>701</height>
@@ -139,15 +139,15 @@ font: 12pt &quot;Times New Roman&quot;;</string>
        <string/>
       </property>
       <property name="pixmap">
-       <pixmap>../../Desktop/AEPL Logo.png</pixmap>
+       <pixmap>C:/Users/Sejal Raskar/Downloads/AEPL Logo.png</pixmap>
       </property>
      </widget>
      <widget class="QPlainTextEdit" name="plainTextEdit_4">
       <property name="geometry">
        <rect>
-        <x>470</x>
+        <x>480</x>
         <y>0</y>
-        <width>871</width>
+        <width>901</width>
         <height>81</height>
        </rect>
       </property>
@@ -169,7 +169,7 @@ Utility Version: 1.0.0                                        (Final Testing Uti
      <widget class="QLabel" name="label_62">
       <property name="geometry">
        <rect>
-        <x>510</x>
+        <x>740</x>
         <y>600</y>
         <width>41</width>
         <height>20</height>
@@ -185,7 +185,7 @@ Utility Version: 1.0.0                                        (Final Testing Uti
      <widget class="QLabel" name="label_63">
       <property name="geometry">
        <rect>
-        <x>600</x>
+        <x>570</x>
         <y>600</y>
         <width>71</width>
         <height>20</height>
@@ -215,8 +215,8 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QLabel" name="label_34">
       <property name="geometry">
        <rect>
-        <x>380</x>
-        <y>260</y>
+        <x>390</x>
+        <y>270</y>
         <width>121</width>
         <height>16</height>
        </rect>
@@ -261,7 +261,7 @@ border-color: rgb(0, 0, 0);</string>
        <rect>
         <x>580</x>
         <y>420</y>
-        <width>51</width>
+        <width>61</width>
         <height>31</height>
        </rect>
       </property>
@@ -316,7 +316,7 @@ border-color: rgb(0, 0, 0);</string>
       <property name="geometry">
        <rect>
         <x>370</x>
-        <y>330</y>
+        <y>335</y>
         <width>161</width>
         <height>31</height>
        </rect>
@@ -359,8 +359,8 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QLabel" name="label_5">
       <property name="geometry">
        <rect>
-        <x>320</x>
-        <y>60</y>
+        <x>340</x>
+        <y>70</y>
         <width>81</width>
         <height>16</height>
        </rect>
@@ -376,7 +376,7 @@ border-color: rgb(0, 0, 0);</string>
       <property name="geometry">
        <rect>
         <x>280</x>
-        <y>410</y>
+        <y>420</y>
         <width>61</width>
         <height>16</height>
        </rect>
@@ -392,7 +392,7 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QPushButton" name="pushButton_8">
       <property name="geometry">
        <rect>
-        <x>610</x>
+        <x>560</x>
         <y>220</y>
         <width>141</width>
         <height>31</height>
@@ -409,8 +409,8 @@ font: 12pt &quot;Times New Roman&quot;;</string>
      <widget class="QLabel" name="label_10">
       <property name="geometry">
        <rect>
-        <x>500</x>
-        <y>170</y>
+        <x>560</x>
+        <y>180</y>
         <width>71</width>
         <height>16</height>
        </rect>
@@ -510,7 +510,7 @@ border-color: rgb(0, 0, 0);</string>
       <property name="geometry">
        <rect>
         <x>290</x>
-        <y>120</y>
+        <y>140</y>
         <width>51</width>
         <height>16</height>
        </rect>
@@ -535,8 +535,8 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QLabel" name="label_14">
       <property name="geometry">
        <rect>
-        <x>268</x>
-        <y>335</y>
+        <x>270</x>
+        <y>340</y>
         <width>101</width>
         <height>20</height>
        </rect>
@@ -570,7 +570,7 @@ font: 12pt &quot;Times New Roman&quot;;</string>
       <property name="geometry">
        <rect>
         <x>370</x>
-        <y>410</y>
+        <y>420</y>
         <width>161</width>
         <height>31</height>
        </rect>
@@ -610,7 +610,7 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QPlainTextEdit" name="plainTextEdit_28">
       <property name="geometry">
        <rect>
-        <x>600</x>
+        <x>480</x>
         <y>560</y>
         <width>61</width>
         <height>31</height>
@@ -624,9 +624,9 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QPushButton" name="pushButton_2">
       <property name="geometry">
        <rect>
-        <x>1160</x>
+        <x>1170</x>
         <y>590</y>
-        <width>101</width>
+        <width>111</width>
         <height>31</height>
        </rect>
       </property>
@@ -643,7 +643,7 @@ font: 12pt &quot;Times New Roman&quot;;</string>
        <rect>
         <x>580</x>
         <y>340</y>
-        <width>171</width>
+        <width>181</width>
         <height>31</height>
        </rect>
       </property>
@@ -654,8 +654,8 @@ font: 12pt &quot;Times New Roman&quot;;</string>
      <widget class="QLabel" name="label_8">
       <property name="geometry">
        <rect>
-        <x>290</x>
-        <y>80</y>
+        <x>289</x>
+        <y>100</y>
         <width>51</width>
         <height>16</height>
        </rect>
@@ -714,7 +714,7 @@ font: 12pt &quot;Times New Roman&quot;;</string>
       <property name="geometry">
        <rect>
         <x>370</x>
-        <y>450</y>
+        <y>460</y>
         <width>61</width>
         <height>31</height>
        </rect>
@@ -745,7 +745,7 @@ border-color: rgb(0, 0, 0);</string>
       <property name="geometry">
        <rect>
         <x>280</x>
-        <y>450</y>
+        <y>460</y>
         <width>41</width>
         <height>20</height>
        </rect>
@@ -805,8 +805,8 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QLabel" name="label_72">
       <property name="geometry">
        <rect>
-        <x>960</x>
-        <y>550</y>
+        <x>990</x>
+        <y>530</y>
         <width>81</width>
         <height>31</height>
        </rect>
@@ -814,24 +814,24 @@ border-color: rgb(0, 0, 0);</string>
       <property name="font">
        <font>
         <family>Times New Roman</family>
-        <pointsize>12</pointsize>
-        <weight>9</weight>
+        <pointsize>14</pointsize>
+        <weight>50</weight>
         <italic>false</italic>
         <bold>false</bold>
        </font>
       </property>
       <property name="styleSheet">
-       <string notr="true">font: 75 12pt &quot;Times New Roman&quot;;</string>
+       <string notr="true">font: 14pt &quot;Times New Roman&quot;;</string>
       </property>
       <property name="text">
-       <string>     Result</string>
+       <string>    Result</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_13">
       <property name="geometry">
        <rect>
-        <x>270</x>
-        <y>295</y>
+        <x>273</x>
+        <y>300</y>
         <width>91</width>
         <height>16</height>
        </rect>
@@ -875,7 +875,7 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QLabel" name="label_36">
       <property name="geometry">
        <rect>
-        <x>641</x>
+        <x>650</x>
         <y>503</y>
         <width>41</width>
         <height>20</height>
@@ -907,7 +907,7 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QPlainTextEdit" name="plainTextEdit_20">
       <property name="geometry">
        <rect>
-        <x>920</x>
+        <x>950</x>
         <y>580</y>
         <width>181</width>
         <height>51</height>
@@ -938,7 +938,7 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QLabel" name="label_74">
       <property name="geometry">
        <rect>
-        <x>600</x>
+        <x>480</x>
         <y>539</y>
         <width>51</width>
         <height>20</height>
@@ -972,7 +972,7 @@ border-color: rgb(0, 0, 0);</string>
       <property name="geometry">
        <rect>
         <x>370</x>
-        <y>290</y>
+        <y>295</y>
         <width>161</width>
         <height>31</height>
        </rect>
@@ -1025,8 +1025,8 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QPlainTextEdit" name="plainTextEdit_13">
       <property name="geometry">
        <rect>
-        <x>500</x>
-        <y>560</y>
+        <x>730</x>
+        <y>630</y>
         <width>71</width>
         <height>31</height>
        </rect>
@@ -1039,9 +1039,9 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QPlainTextEdit" name="QC_input">
       <property name="geometry">
        <rect>
-        <x>360</x>
-        <y>120</y>
-        <width>104</width>
+        <x>370</x>
+        <y>140</y>
+        <width>141</width>
         <height>31</height>
        </rect>
       </property>
@@ -1053,9 +1053,9 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QPlainTextEdit" name="QC_input_2">
       <property name="geometry">
        <rect>
-        <x>360</x>
-        <y>160</y>
-        <width>104</width>
+        <x>370</x>
+        <y>180</y>
+        <width>141</width>
         <height>31</height>
        </rect>
       </property>
@@ -1069,7 +1069,7 @@ border-color: rgb(0, 0, 0);</string>
        <rect>
         <x>580</x>
         <y>300</y>
-        <width>171</width>
+        <width>181</width>
         <height>31</height>
        </rect>
       </property>
@@ -1096,7 +1096,7 @@ border-color: rgb(0, 0, 0);</string>
        <rect>
         <x>580</x>
         <y>500</y>
-        <width>51</width>
+        <width>61</width>
         <height>31</height>
        </rect>
       </property>
@@ -1151,9 +1151,9 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QLabel" name="label_31">
       <property name="geometry">
        <rect>
-        <x>638</x>
+        <x>650</x>
         <y>420</y>
-        <width>51</width>
+        <width>31</width>
         <height>20</height>
        </rect>
       </property>
@@ -1162,7 +1162,7 @@ border-color: rgb(0, 0, 0);</string>
 </string>
       </property>
       <property name="text">
-       <string>Operator</string>
+       <string>Optr</string>
       </property>
      </widget>
      <widget class="QPlainTextEdit" name="plainTextEdit_12">
@@ -1191,7 +1191,7 @@ border-color: rgb(0, 0, 0);</string>
        <string/>
       </property>
       <property name="pixmap">
-       <pixmap>../../.designer/backup/AEPL_Logo.png</pixmap>
+       <pixmap>C:/Users/Sejal Raskar/Downloads/AEPL Logo.png</pixmap>
       </property>
      </widget>
      <widget class="QPlainTextEdit" name="DI1_H_7">
@@ -1254,7 +1254,7 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QPlainTextEdit" name="plainTextEdit_21">
       <property name="geometry">
        <rect>
-        <x>500</x>
+        <x>650</x>
         <y>630</y>
         <width>61</width>
         <height>31</height>
@@ -1268,9 +1268,9 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QPlainTextEdit" name="operator_Input">
       <property name="geometry">
        <rect>
-        <x>360</x>
-        <y>80</y>
-        <width>104</width>
+        <x>370</x>
+        <y>100</y>
+        <width>141</width>
         <height>31</height>
        </rect>
       </property>
@@ -1313,7 +1313,7 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QLabel" name="label_48">
       <property name="geometry">
        <rect>
-        <x>650</x>
+        <x>655</x>
         <y>460</y>
         <width>21</width>
         <height>20</height>
@@ -1361,8 +1361,8 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QLabel" name="label_15">
       <property name="geometry">
        <rect>
-        <x>270</x>
-        <y>376</y>
+        <x>276</x>
+        <y>386</y>
         <width>91</width>
         <height>16</height>
        </rect>
@@ -1378,8 +1378,8 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QPlainTextEdit" name="barcode_Input">
       <property name="geometry">
        <rect>
-        <x>650</x>
-        <y>160</y>
+        <x>690</x>
+        <y>170</y>
         <width>141</width>
         <height>31</height>
        </rect>
@@ -1387,22 +1387,6 @@ border-color: rgb(0, 0, 0);</string>
       <property name="styleSheet">
        <string notr="true">border-color: rgb(0, 0, 0);
 background-color: rgb(255, 255, 255);</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_75">
-      <property name="geometry">
-       <rect>
-        <x>500</x>
-        <y>538</y>
-        <width>71</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">font: 75 12pt &quot;Times New Roman&quot;;</string>
-      </property>
-      <property name="text">
-       <string>Analog volt</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_27">
@@ -1427,7 +1411,7 @@ background-color: rgb(255, 255, 255);</string>
        <rect>
         <x>690</x>
         <y>460</y>
-        <width>61</width>
+        <width>71</width>
         <height>31</height>
        </rect>
       </property>
@@ -1455,8 +1439,8 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QPlainTextEdit" name="barcode_Input_2">
       <property name="geometry">
        <rect>
-        <x>650</x>
-        <y>70</y>
+        <x>690</x>
+        <y>90</y>
         <width>141</width>
         <height>31</height>
        </rect>
@@ -1487,7 +1471,7 @@ background-color: rgb(255, 255, 255);</string>
       <property name="geometry">
        <rect>
         <x>280</x>
-        <y>170</y>
+        <y>180</y>
         <width>71</width>
         <height>16</height>
        </rect>
@@ -1560,7 +1544,7 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QPlainTextEdit" name="plainTextEdit_25">
       <property name="geometry">
        <rect>
-        <x>600</x>
+        <x>570</x>
         <y>630</y>
         <width>61</width>
         <height>31</height>
@@ -1576,7 +1560,7 @@ border-color: rgb(0, 0, 0);</string>
        <rect>
         <x>690</x>
         <y>500</y>
-        <width>61</width>
+        <width>71</width>
         <height>31</height>
        </rect>
       </property>
@@ -1622,7 +1606,7 @@ border-color: rgb(0, 0, 0);</string>
        <rect>
         <x>690</x>
         <y>380</y>
-        <width>61</width>
+        <width>71</width>
         <height>31</height>
        </rect>
       </property>
@@ -1635,7 +1619,7 @@ border-color: rgb(0, 0, 0);</string>
       <property name="geometry">
        <rect>
         <x>370</x>
-        <y>370</y>
+        <y>380</y>
         <width>161</width>
         <height>31</height>
        </rect>
@@ -1675,7 +1659,7 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QLabel" name="label_30">
       <property name="geometry">
        <rect>
-        <x>647</x>
+        <x>644</x>
         <y>381</y>
         <width>41</width>
         <height>20</height>
@@ -1687,23 +1671,6 @@ border-color: rgb(0, 0, 0);</string>
       </property>
       <property name="text">
        <string>CGREG</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="pushButton_6">
-      <property name="geometry">
-       <rect>
-        <x>1140</x>
-        <y>220</y>
-        <width>75</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: rgb(47, 199, 254);
-font: 12pt &quot;Times New Roman&quot;;</string>
-      </property>
-      <property name="text">
-       <string>DI/DO</string>
       </property>
      </widget>
      <widget class="QPlainTextEdit" name="DI1_H_8">
@@ -1723,8 +1690,8 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QPlainTextEdit" name="server_Input">
       <property name="geometry">
        <rect>
-        <x>650</x>
-        <y>110</y>
+        <x>690</x>
+        <y>130</y>
         <width>141</width>
         <height>31</height>
        </rect>
@@ -1737,10 +1704,10 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QLabel" name="label_33">
       <property name="geometry">
        <rect>
-        <x>500</x>
-        <y>120</y>
+        <x>540</x>
+        <y>140</y>
         <width>131</width>
-        <height>16</height>
+        <height>21</height>
        </rect>
       </property>
       <property name="font">
@@ -1763,10 +1730,10 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QLabel" name="label_6">
       <property name="geometry">
        <rect>
-        <x>500</x>
-        <y>80</y>
+        <x>560</x>
+        <y>100</y>
         <width>81</width>
-        <height>16</height>
+        <height>20</height>
        </rect>
       </property>
       <property name="font">
@@ -1789,8 +1756,8 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QProgressBar" name="progressBar">
       <property name="geometry">
        <rect>
-        <x>860</x>
-        <y>140</y>
+        <x>900</x>
+        <y>130</y>
         <width>281</width>
         <height>31</height>
        </rect>
@@ -1955,7 +1922,7 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QPlainTextEdit" name="plainTextEdit_31">
       <property name="geometry">
        <rect>
-        <x>700</x>
+        <x>480</x>
         <y>630</y>
         <width>61</width>
         <height>31</height>
@@ -1966,26 +1933,10 @@ border-color: rgb(0, 0, 0);</string>
 border-color: rgb(0, 0, 0);</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_20">
-      <property name="geometry">
-       <rect>
-        <x>710</x>
-        <y>606</y>
-        <width>47</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">font: 12pt &quot;Times New Roman&quot;;</string>
-      </property>
-      <property name="text">
-       <string>MQTT</string>
-      </property>
-     </widget>
      <widget class="QPlainTextEdit" name="plainTextEdit_24">
       <property name="geometry">
        <rect>
-        <x>700</x>
+        <x>570</x>
         <y>560</y>
         <width>61</width>
         <height>31</height>
@@ -1999,7 +1950,7 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QLabel" name="label_76">
       <property name="geometry">
        <rect>
-        <x>710</x>
+        <x>580</x>
         <y>540</y>
         <width>51</width>
         <height>20</height>
@@ -2015,7 +1966,7 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QPlainTextEdit" name="plainTextEdit_47">
       <property name="geometry">
        <rect>
-        <x>790</x>
+        <x>730</x>
         <y>561</y>
         <width>61</width>
         <height>31</height>
@@ -2029,7 +1980,7 @@ border-color: rgb(0, 0, 0);</string>
      <widget class="QLabel" name="label_119">
       <property name="geometry">
        <rect>
-        <x>800</x>
+        <x>740</x>
         <y>540</y>
         <width>51</width>
         <height>16</height>
@@ -2040,6 +1991,115 @@ border-color: rgb(0, 0, 0);</string>
       </property>
       <property name="text">
        <string>Tamper</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_77">
+      <property name="geometry">
+       <rect>
+        <x>660</x>
+        <y>540</y>
+        <width>51</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 75 12pt &quot;Times New Roman&quot;;</string>
+      </property>
+      <property name="text">
+       <string>IGN</string>
+      </property>
+     </widget>
+     <widget class="QPlainTextEdit" name="plainTextEdit_26">
+      <property name="geometry">
+       <rect>
+        <x>650</x>
+        <y>560</y>
+        <width>61</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(255, 255, 255);
+border-color: rgb(0, 0, 0);</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_20">
+      <property name="geometry">
+       <rect>
+        <x>660</x>
+        <y>600</y>
+        <width>47</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 12pt &quot;Times New Roman&quot;;</string>
+      </property>
+      <property name="text">
+       <string>MQTT</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_75">
+      <property name="geometry">
+       <rect>
+        <x>480</x>
+        <y>600</y>
+        <width>71</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 75 12pt &quot;Times New Roman&quot;;</string>
+      </property>
+      <property name="text">
+       <string>Analog volt</string>
+      </property>
+     </widget>
+     <widget class="QPlainTextEdit" name="plainTextEdit_51">
+      <property name="geometry">
+       <rect>
+        <x>810</x>
+        <y>560</y>
+        <width>71</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(255, 255, 255);
+border-color: rgb(0, 0, 0);</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_123">
+      <property name="geometry">
+       <rect>
+        <x>820</x>
+        <y>540</y>
+        <width>91</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font: 75 12pt &quot;Times New Roman&quot;;</string>
+      </property>
+      <property name="text">
+       <string>Flash Memory</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_9">
+      <property name="geometry">
+       <rect>
+        <x>770</x>
+        <y>220</y>
+        <width>141</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(47, 199, 254);
+font: 12pt &quot;Times New Roman&quot;;</string>
+      </property>
+      <property name="text">
+       <string>Retry</string>
       </property>
      </widget>
     </widget>
