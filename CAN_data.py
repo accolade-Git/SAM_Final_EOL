@@ -10,23 +10,25 @@ from datetime import datetime, timezone
 import pytz
 import resources_rc
 import threading
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui  import QCursor
 from PyQt5.QtCore import QPoint
 from openpyxl import Workbook
 from openpyxl import load_workbook
 from datetime import datetime, timedelta,timezone
 from PyQt5.QtWidgets import QMainWindow, QApplication,QMessageBox
+from PyQt5.QtGui import QTextCursor, QTextBlockFormat
 from PyQt5.QtCore import QDateTime
 from PyQt5.QtCore import QTimer
 
 
 # Expected CAN IDs and their frame counts
-expected_frame_counts = {0x100: 3, 0x101 :3, 0x103 : 4, 0x105 :3, 0x106 :3 , 0x115 : 1, 0x116 : 1,0x109 :1,0x110:1, 0x112 :2,0x113 :1,0x114:5
-                         ,0x102 : 1,0x119 :1, 0x121 : 1}
+expected_frame_counts = {0x100: 3, 0x101 :3, 0x103 : 4, 0x104 : 4,0x105 :3, 0x106 :3 , 0x115 : 1, 0x116 : 1,0x109 :1,0x110:1, 0x112 :2,0x113 :1,0x114:5
+                         ,0x102 : 1,0x119 :1, 0x121 : 1 , 0x122 : 1, 0x123:1}
 
 # Initialize received_frames with empty lists for each CAN ID
-received_frames = {0x100: [],0x101 : [] , 0x103 :[],0x105 :[],0x106 :[] , 0x115 :[], 0x116 : [],0x109:[],0x110:[],0x112:[],0x113:[],0x114:[]
-                   ,0x102:[] , 0x119 :[] , 0x121 :[]}
+received_frames = {0x100: [],0x101 : [] , 0x103 :[], 0x104 : [] ,0x105 :[],0x106 :[] , 0x115 :[], 0x116 : [],0x109:[],0x110:[],0x112:[],0x113:[],0x114:[]
+                   ,0x102:[] , 0x119 :[] , 0x121 :[] ,0x122 :[] ,0x123 : []}
 
 
 
@@ -51,6 +53,7 @@ class CAN_Data(QMainWindow):
         self.IMEI_ascii= None
         self.ICCID_ascii = None
         self.appln_ver = None
+        self.BL_ver =None
         self.GSM_ver = None
         self.Gps_ver = None
         self.Int_vtg = None
@@ -108,6 +111,7 @@ class CAN_Data(QMainWindow):
         self.elapsed_time = 0
         self.retry=0
         self.failFunc_list =[]
+        self.Flash_result =None
         self.device_id = None
         self.device_id_found = False
         self.erase_status = None
@@ -116,11 +120,21 @@ class CAN_Data(QMainWindow):
         self.read_status_found = False
         self.write_status = None
         self.write_status_found = False
+        self.watchdog_reboot = None
+        self.watchdogreboot_flag = False
+        self.watchdog_reboot_count =None
+        self.watchdog_reboot_count_dec = None
+        self.watchdogrebootCount_flag = False
+        self.WDT_result = 'Fail'
+        self.DOs_result = None
+        self.AnalogVolt_result = None
+
         
         # Initialize flags
         self.function100_done = False
         self.function101_done = False
         self.function103_done = False
+        self.function104_done = False
         self.function105_done = False
         self.function106_done = False
         self.function115_done = False
@@ -133,6 +147,8 @@ class CAN_Data(QMainWindow):
         self.function102_done = False
         #self.DIs_func_done = False
         self.function121_done = False
+        self.function122_done = False
+        self.function123_done = False
 
         # Timer for delays
         self.timer = QTimer(self)
@@ -158,6 +174,7 @@ class CAN_Data(QMainWindow):
         self.function100_done = False
         self.function101_done = False
         self.function103_done = False
+        self.function104_done = False
         self.function105_done = False
         self.function106_done = False
         self.function115_done = False
@@ -170,6 +187,8 @@ class CAN_Data(QMainWindow):
         self.function102_done = False
         #self.DIs_func_done =  False
         self.function121_done = False
+        self.function122_done = False
+        self.function123_done = False
                 
         # Call the first function
         self.fun_0x103()
@@ -342,7 +361,7 @@ class CAN_Data(QMainWindow):
                   self.ui.plainTextEdit_8.setPlainText(self.appln_ver)
                   self.ui.plainTextEdit_12.appendPlainText(f"Application Version : {self.appln_ver}\n")
 
-                  if self.appln_ver != 'SAM01_LITE_PROD_0.0.1_TST01':
+                  if self.appln_ver != 'SAM01_LITE_PROD_0.0.1_TST04':
                       self.ui.plainTextEdit_8.setStyleSheet("background-color: red;")
                       
                   else:
@@ -363,6 +382,71 @@ class CAN_Data(QMainWindow):
             self.function103_done = True
             time.sleep(2)
             self.ui.plainTextEdit_8.setReadOnly(True)
+            self.execute_next_function()
+            #print("Frames cleared for CAN ID 0x103")
+
+    def fun_0x104(self):
+        if self.busy:  # Check if the system is busy
+            print("System is busy, please wait...")
+            return
+ 
+        if self.bus is None:  # Check if the bus was initialized properly
+            print("CAN Bus not initialized. Cannot send message.")
+            return
+ 
+        self.busy = True  # Mark the system as busy
+        try:
+            msg = can.Message(arbitration_id=0x104, data=[0, 0, 0, 0, 0, 0, 0, 0], is_extended_id=False)
+           
+            # Send the message
+            self.bus.send(msg)
+            #print(f"Message sent on {self.bus.channel_info}")
+ 
+            # Wait for the response
+            for i in range(expected_frame_counts[0x104]):
+                message = self.bus.recv(timeout=2)  # 1 second timeout for each frame
+                if message:
+                    
+                    #print(f"Received message from CAN ID {hex(message.arbitration_id)}: {message.data.hex()}")
+                    received_frames[0x104].append(message)
+                else:
+                    print(f"Timeout waiting for message for CAN ID 0x104. No response received.")
+ 
+            # Check if we have received all expected frames for 0x100
+            if len(received_frames[0x104]) == expected_frame_counts[0x104]:
+                frames = received_frames[0x104]
+                frames.sort(key=lambda x: x.data[0])  # Sort by sequence number
+                complete_message = b''.join(frame.data[1:] for frame in frames)
+                #print(f"Reassembled message for CAN ID 0x100: {complete_message.hex()}")
+ 
+                try:
+                  self.BL_ver = complete_message.decode('ascii').rstrip('\x00').strip() # Decode bytes into ASCII string
+                  #print('appln ver ASCII :',self.appln_ver)
+                  print(f"Bootloader version: {repr(self.BL_ver)}")
+                  self.ui.plainTextEdit_9.setPlainText(self.BL_ver)
+                  self.ui.plainTextEdit_12.appendPlainText(f"BootLoader Version : {self.BL_ver}\n")
+
+                  if self.BL_ver != 'SAM01_BOOT_0.0.1_TST03':
+                      self.ui.plainTextEdit_9.setStyleSheet("background-color: red;")
+                      
+                  else:
+                      self.ui.plainTextEdit_9.setStyleSheet("background-color: white;")
+                      
+                except UnicodeDecodeError:
+                  print("Error decoding IMEI to ASCII. The data may contain non-ASCII characters.")
+ 
+            else:
+                print(f"Not all frames received for CAN ID 0x104. Expected {expected_frame_counts[0x104]}, but received {len(received_frames[0x104])}.")
+ 
+        except can.CanError as e:
+            print(f"CAN error: {str(e)}")
+ 
+        finally:
+            self.busy = False  # Mark the system as not busy
+            received_frames[0x104].clear()
+            self.function104_done = True
+            time.sleep(2)
+            self.ui.plainTextEdit_9.setReadOnly(True)
             self.execute_next_function()
             #print("Frames cleared for CAN ID 0x103")
 
@@ -1169,15 +1253,13 @@ class CAN_Data(QMainWindow):
             if self.Mains_result == 'Pass' and self.IntVtg_result == 'Pass' and self.Gps_result == 'Pass' and self.GSM_result == 'Pass' and self.RTC_result == 'Pass' and self.MEMS_result == 'Pass' and self.MQTT_result == 'Pass':
                 self.ui.plainTextEdit_20.setPlainText("Pass")
                 self.ui.plainTextEdit_20.setStyleSheet("""Font-size:20px; font-weight: Bold; background-color: green""")
-                
+               
             else:
                 self.ui.plainTextEdit_20.setPlainText("Fail")
-                self.ui.plainTextEdit_20.setStyleSheet("""Font-size:20px; font-weight: Bold; background-color: red""")
-              
-
-            self.overall_result = self.ui.plainTextEdit_20.toPlainText()
+                self.ui.plainTextEdit_20.setStyleSheet("""Font-size:20px; font-weight: Bold; background-color: red """)
         
-
+            self.overall_result = self.ui.plainTextEdit_20.toPlainText()
+            
         except can.CanError as e:
             print(f"CAN error: {str(e)}")
 
@@ -1188,6 +1270,144 @@ class CAN_Data(QMainWindow):
             time.sleep(2)  # Sleep to allow processing
             self.ui.plainTextEdit_21.setReadOnly(True)
             self.execute_next_function()  # Move on to the next function
+
+    def fun_0x122(self):
+        if self.busy:  # Check if the system is busy
+            print("System is busy, please wait...")
+            return
+
+        if self.bus is None:  # Check if the bus was initialized properly
+            print("CAN Bus not initialized. Cannot send message.")
+            return
+
+        self.busy = True  # Mark the system as busy
+
+        try:
+            
+            # Create the CAN message
+            msg = can.Message(arbitration_id=0x122, data=[0, 0, 0, 0, 0, 0, 0, 0], is_extended_id=False)
+
+            # Send the message once
+            self.bus.send(msg)
+
+            # Wait for a response with a timeout (e.g., 2 seconds)
+            message = self.bus.recv(timeout=2)  # 2 seconds timeout for response
+
+            if message:
+               
+                self.watchdog_reboot = message.data[1]
+                print('Watchdog reboot status:', self.watchdog_reboot)
+
+                if self.watchdog_reboot != 1:
+                    self.watchdogreboot_flag = False
+                    
+                else:
+                    self.watchdogreboot_flag = True
+                    self.retry_timer = QTimer(self)
+                    self.retry_timer.timeout.connect(self.update_rebootStatus)
+                    self.retry_timer.setSingleShot(True)
+                    self.retry_timer.start(1000)
+                    
+            else:
+                # If no message is received within the timeout period
+                print(f"Timeout waiting for message for CAN ID 0x102. No response received.")
+
+
+        except can.CanError as e:
+            print(f"CAN error: {str(e)}")
+
+        finally:
+            self.busy = False  # Mark the system as not busy
+            received_frames[0x122].clear()  # Clear any frames in the buffer for ID 0x102
+            self.function122_done = True
+            self.retry_timer = QTimer(self)
+            self.retry_timer.timeout.connect(self.fun_0x123)
+            self.retry_timer.setSingleShot(True)
+            self.retry_timer.start(25000)
+            #time.sleep(2)  # Sleep to allow processing
+            self.ui.plainTextEdit_14.setReadOnly(True)
+            self.execute_next_function()  # Move on to the next function
+
+    def update_rebootStatus(self):
+        self.ui.plainTextEdit_12.setPlainText(" Please wait device is rebooting...")
+        self.ui.plainTextEdit_12.setStyleSheet("""
+            font-size: 16px; 
+            font-weight: bold; 
+            color: red;
+        """)
+
+    
+    def fun_0x123(self):
+        if self.busy:  # Check if the system is busy
+            print("System is busy, please wait...")
+            return
+
+        if self.bus is None:  # Check if the bus was initialized properly
+            print("CAN Bus not initialized. Cannot send message.")
+            return
+
+        self.busy = True  # Mark the system as busy
+
+        # Initialize previous watchdog count if it doesn't exist
+        if not hasattr(self, 'prev_watchdog_reboot_count_dec'):
+            self.prev_watchdog_reboot_count_dec = None
+
+        try:
+            # Create the CAN message
+            msg = can.Message(arbitration_id=0x123, data=[0, 0, 0, 0, 0, 0, 0, 0], is_extended_id=False)
+
+            # Send the message once
+            self.bus.send(msg)
+
+            # Wait for a response with a timeout (e.g., 2 seconds)
+            message = self.bus.recv(timeout=2)  # 2 seconds timeout for response
+
+            if message:
+                # Update the current watchdog reboot count with new data
+                self.watchdog_reboot_count = message.data[1:5]
+                self.watchdog_reboot_count_dec = int.from_bytes(self.watchdog_reboot_count, byteorder='big')
+                
+                print('Current watchdog reboot count decimal:', self.watchdog_reboot_count_dec)
+
+                # Compare with previous count
+                if self.prev_watchdog_reboot_count_dec is not None:
+                    print('Previous watchdog reboot count decimal:', self.prev_watchdog_reboot_count_dec)
+                    
+                    if self.watchdog_reboot_count_dec > self.prev_watchdog_reboot_count_dec:
+                        self.watchdogrebootCount_flag = True
+                        #print("Watchdog reboot count is incremental as expected.")
+                    elif self.watchdog_reboot_count_dec == self.prev_watchdog_reboot_count_dec:
+                        self.watchdogrebootCount_flag = False
+                        print("Error: Watchdog reboot count is the same as the previous count.")
+                    else:
+                        print("Error: Watchdog reboot count has decreased, which is unexpected!")
+                else:
+                    print("No previous watchdog reboot count available for comparison.")
+
+                # Update the previous watchdog reboot count
+                self.prev_watchdog_reboot_count_dec = self.watchdog_reboot_count_dec
+
+                if self.watchdogreboot_flag and self.watchdogrebootCount_flag:
+                    self.ui.plainTextEdit_12.setPlainText(f'Device reboot successful. \nCurrent bootcount is: {self.watchdog_reboot_count_dec}')
+                    self.ui.plainTextEdit_14.setPlainText("Pass")
+                    self.ui.plainTextEdit_14.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: green""")
+                else:
+                    self.ui.plainTextEdit_14.setPlainText("Fail")
+                    self.ui.plainTextEdit_14.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: red""")
+
+                
+                self.WDT_result = self.ui.plainTextEdit_14.toPlainText()
+
+
+        finally:
+                self.busy = False  # Mark the system as not busy
+                received_frames[0x123].clear()  # Clear any frames in the buffer for ID 0x102
+                self.function123_done = True
+                #self.retry_timer.stop()
+                time.sleep(2)  # Sleep to allow processing
+                self.ui.plainTextEdit_14.setReadOnly(True)
+                self.execute_next_function()  # Move on to the next function
+
 
 
     # def DIs_func(self):
@@ -1343,11 +1563,14 @@ class CAN_Data(QMainWindow):
 
     def execute_next_function(self):
         """Check which function is done and call the next one."""
-        if self.function103_done and not self.function106_done:
-            self.fun_0x106()  # Call function 2 after function 1 is done
+        if self.function103_done and not self.function104_done:
+            self.fun_0x104()  # Call function 2 after function 1 is done
+
+        elif self.function104_done and not self.function106_done:
+             self.fun_0x106()  # Call function 3 after function 2 is done
 
         elif self.function106_done and not self.function105_done:
-             self.fun_0x105()  # Call function 3 after function 2 is done
+            self.fun_0x105()
 
         elif self.function105_done and not self.function101_done:
             self.fun_0x101()
@@ -1373,17 +1596,24 @@ class CAN_Data(QMainWindow):
         elif self.function116_done and not self.function113_done:
             self.fun_0x113()
 
-        elif self.function113_done and not self.function114_done:
-            self.fun_0x114()
-
         # elif self.function114_done and not self.DIs_func_done:
         #     self.DIs_func()
 
-        elif self.function114_done and not self.function121_done:
+        elif self.function113_done and not self.function114_done:
+            self.fun_0x114()
+
+        elif self.function114_done and not self.function102_done:
+            self.fun_0x102()
+
+        elif self.function102_done and not self.function121_done:
             self.fun_0x121()
 
-        elif self.function121_done and not self.function102_done:
-            self.fun_0x102()
+        elif self.function121_done and not self.function123_done:
+            self.fun_0x123()
+            
+        elif self.function123_done and not self.function122_done:
+            self.fun_0x122()
+     
 
         else:
             print("All functions completed.")
@@ -1431,6 +1661,9 @@ class CAN_Data(QMainWindow):
         if self.RTC_result == 'Fail':
             self.failFunc_list.append(self.fun_0x102)
             self.fail_attempts[self.fun_0x102] = 0
+        if self.WDT_result == 'Fail':
+            self.failFunc_list.extend([self.fun_0x123, self.fun_0x122])
+            self.fail_attempts[self.fun_0x123] = 0
 
         # Print the failed function list
         print("Initial failed functions:", [func.__name__ for func in self.failFunc_list])
@@ -1528,10 +1761,11 @@ class CAN_Data(QMainWindow):
             ws = wb.active
 
             # Set the headers for the columns (only if the file is being created for the first time)
-            headers = ['Date', 'IMEI', 'ICCID', 'Application Version', 'GSM Version',
+            headers = ['Date', 'IMEI', 'ICCID', 'Application Version','BL version', 'GSM Version',
                    'GPS Version', 'Mains vtg', 'Int_Bat vtg', 'GPS status', 'No.of Sat', 'CREG', 'CGREG', 'CSQ',
                    'Operator', 'MQTT', 'No.Of Login packet', 'MEMS Xa', 'MEMS Ya', 'MEMS Za', 'Mains result', 'IntBat result'
-                   ,'Gps result', 'GSM result','IGN result','Tamper result','FlashMemory result','MEMS result','MQTT result','RTC result','Overall Result']
+                   ,'Gps result', 'GSM result','IGN result','Tamper result','FlashMemory result','DIs result','DOs result',
+                   'AnalogVolt result','MEMS result','MQTT result','RTC result','WDT result','Overall Result']
             ws.append(headers)  # Append headers as the first row
 
         self.current_datetime =self.ui.operator_Input_2.toPlainText()
@@ -1542,6 +1776,7 @@ class CAN_Data(QMainWindow):
         self.clean_string(self.IMEI_ascii) if self.IMEI_ascii is not None else 'Not found',
         self.clean_string(self.ICCID_ascii) if self.ICCID_ascii is not None else 'Not found',
         self.clean_string(self.appln_ver) if self.appln_ver is not None else 'Not found',
+        self.clean_string(self.BL_ver) if self.BL_ver is not None else 'Not found',
         self.clean_string(self.GSM_ver) if self.GSM_ver is not None else 'Not found ',
         self.clean_string(self.Gps_ver) if self.Gps_ver is not None else 'Not found',
         self.clean_string(self.mains_vtg) if self.mains_vtg is not None else 'Not found',
@@ -1563,11 +1798,14 @@ class CAN_Data(QMainWindow):
         self.clean_string(str(self.GSM_result)) if self.GSM_result is not None else 'Not found',
         self.clean_string(str(self.IGN_result)) if self.IGN_result is not None else 'Not found',
         self.clean_string(str(self.Tamper_result)) if self.Tamper_result is not None else 'Not found',
-        #self.clean_string(str(self.DIs_result)) if self.DIs_result is not None else 'Not found',
         self.clean_string(str(self.Flash_result)) if self.Flash_result is not None else 'Not found',
+        self.clean_string(str(self.DIs_result)) if self.DIs_result is not None else 'Not found',
+        self.clean_string(str(self.Dos_result)) if self.DOs_result is not None else 'Not found',
+        self.clean_string(str(self.AnalogVolt_result)) if self.AnalogVolt_result is not None else 'Not found',
         self.clean_string(str(self.MEMS_result)) if self.MEMS_result is not None else 'Not found',
         self.clean_string(str(self.MQTT_result)) if self.MQTT_result is not None else 'Not found',
         self.clean_string(str(self.RTC_result)) if self.RTC_result is not None else 'Not found',
+        self.clean_string(str(self.WDT_result)) if self.WDT_result is not None else 'Not found',
         self.clean_string(str(self.overall_result)) if self.overall_result is not None else 'Not found'
         ]
 
@@ -1682,6 +1920,8 @@ class CAN_Data(QMainWindow):
         self.ui.plainTextEdit_13.setStyleSheet("background-color: white;")
         self.ui.plainTextEdit_51.clear()
         self.ui.plainTextEdit_51.setStyleSheet("background-color: white;")
+        self.ui.plainTextEdit_14.clear()
+        self.ui.plainTextEdit_14.setStyleSheet("background-color: white;")
 
 
 # # Entry point of the program
