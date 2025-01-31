@@ -267,10 +267,10 @@ class MyClass(QMainWindow):
             self.ui.plainTextEdit_11.setPlainText(ICCID)
             self.ui.plainTextEdit_12.appendPlainText(f"ICCID : {ICCID}\n")
         
-            if len(ICCID)<20:
-                self.ui.plainTextEdit_11.setStyleSheet("background-color: red;")
+            if len(ICCID)== 20:
+                self.ui.plainTextEdit_11.setStyleSheet("background-color: white;")
             else:
-                self.ui.plainTextEdit_11.setStyleSheet("background-color: white;") 
+                self.ui.plainTextEdit_11.setStyleSheet("background-color: red;") 
 
         except Exception as e:
             self.ui.plainTextEdit_12.appendPlainText(f"Error updating UI: {str(e)}\n")   
@@ -282,10 +282,10 @@ class MyClass(QMainWindow):
             self.ui.plainTextEdit_10.setPlainText(IMEI)
             self.ui.plainTextEdit_12.appendPlainText(f"IMEI : {IMEI}\n")
                     
-            if len(IMEI) < 15:
-                 self.ui.plainTextEdit_10.setStyleSheet("background-color: red;")
-            else:
+            if len(IMEI) == 15:
                  self.ui.plainTextEdit_10.setStyleSheet("background-color: white;")
+            else:
+                 self.ui.plainTextEdit_10.setStyleSheet("background-color: red;")
         except Exception as e:
             self.ui.plainTextEdit_12.appendPlainText(f"Error updating UI: {str(e)}\n")
         finally:
@@ -295,27 +295,28 @@ class MyClass(QMainWindow):
     def updateUI_110(self,CREG,CGREG,CSQ):
         try:
             self.ui.CSQ.setPlainText(str(CREG))
-            if CREG !=5:
-                self.ui.CSQ.setStyleSheet("background-color: red;")
-            else:
+            if CREG == 5 or CREG == 1:
                 self.ui.CSQ.setStyleSheet("background-color: white;")
-                self.CREG_found = True
-
-            self.ui.CGREG.setPlainText(str(CGREG))
-            if CGREG != 5:
-                self.ui.CGREG.setStyleSheet("background-color: red;")
+                self.worker_obj.CREG_found = True
             else:
+                self.ui.CSQ.setStyleSheet("background-color: red;")
+                
+            self.ui.CGREG.setPlainText(str(CGREG))
+            if CGREG == 5 or CGREG == 1:
                 self.ui.CGREG.setStyleSheet("background-color: white;")
-                self.CGREG_found =True
+                self.worker_obj.CGREG_found =True
+            else:
+                self.ui.CGREG.setStyleSheet("background-color: red;")
+                
 
             self.ui.CREG.setPlainText(str(CSQ))
-            if CSQ < 10:
+            if CSQ < 8:
                 self.ui.CREG.setStyleSheet("background-color: red;")
             else:
                 self.ui.CREG.setStyleSheet("background-color: white;")
-                self.CSQ_found =True
+                self.worker_obj.CSQ_found =True
 
-            if self.CREG_found and self.CGREG_found:
+            if self.worker_obj.CREG_found and self.worker_obj.CGREG_found:
                 self.ui.plainTextEdit_24.setPlainText("Pass")
                 self.ui.plainTextEdit_24.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: green""")
             else:
@@ -340,7 +341,7 @@ class MyClass(QMainWindow):
             self.ui.Operator.setPlainText(operator)
             self.ui.plainTextEdit_12.appendPlainText(f"Operator Name : {operator}\n")
                     
-            if operator == 'AIRTEL 4G':
+            if operator == 'AIRTEL 4G' or 'Cellone' or 'BSNL':
                 self.ui.Operator.setStyleSheet("background-color: white;")
                 self.operator_found = True
             else:
@@ -371,7 +372,8 @@ class MyClass(QMainWindow):
                 self.ui.NoOf_satellite.setPlainText(str('0'))
                 self.ui.NoOf_satellite.setStyleSheet("background-color: red;")
                 self.ui.plainTextEdit_12.appendPlainText(f"No. of Satellite: {str('0')}\n")
-            else:
+
+            elif No_Of_Sat > 4:
                 self.ui.NoOf_satellite.setPlainText(str(No_Of_Sat))
                 self.ui.NoOf_satellite.setStyleSheet("background-color: white;")
                 self.ui.plainTextEdit_12.appendPlainText(f"No. of Satellite: {str(No_Of_Sat)}\n")
@@ -413,11 +415,11 @@ class MyClass(QMainWindow):
             self.ui.IntBat_input_2.setPlainText(IntBatVtg)
             self.ui.plainTextEdit_12.appendPlainText(f"Int_Bat Voltage: {IntBatVtg}\n")
 
-            if IntBatVtg_float > 4.2 or IntBatVtg_float == 0.00:
+            if IntBatVtg_float < 3.5 or IntBatVtg_float == 0.00:
                     self.ui.IntBat_input_2.setStyleSheet("background-color: red;")
                     self.ui.plainTextEdit_23.setPlainText("Fail")
                     self.ui.plainTextEdit_23.setStyleSheet("""Font-size:16px ; font-weight : Bold;background-color:red""")
-            else:
+            elif IntBatVtg_float > 3.5:
                     self.ui.IntBat_input_2.setStyleSheet("background-color: white;")
                     self.ui.plainTextEdit_23.setPlainText("Pass")
                     self.ui.plainTextEdit_23.setStyleSheet("""Font-size:16px ; font-weight : Bold;background-color:green""")
@@ -438,7 +440,7 @@ class MyClass(QMainWindow):
                     self.ui.Analog1_2.setPlainText(str('0'))
                     self.ui.plainTextEdit_21.setPlainText("Fail")
                     self.ui.plainTextEdit_21.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: red""")
-            else:
+            elif Mqtt_status == 1:
                     self.ui.Analog1_2.setStyleSheet("background-color: white;")
                     self.ui.Analog1_2.setPlainText(str(Mqtt_status))
                     self.ui.plainTextEdit_21.setPlainText("Pass")
@@ -468,7 +470,7 @@ class MyClass(QMainWindow):
             self.ui.MEMS_Ya.setPlainText(frame2)
             self.ui.MEMS_Za.setPlainText(frame3)
             self.ui.MEMS_Xa_2.setPlainText(prefix)
-            self.ui.plainTextEdit_12.appendPlainText(f"Accelerometer data: {frame1}, {frame2}, {frame3}")
+            self.ui.plainTextEdit_12.appendPlainText(f"Accelerometer data: {frame1}, {frame2}, {frame3}\n")
 
             # Determine pass/fail status based on the frames
             if frame1 and frame2 and frame3:
@@ -492,7 +494,7 @@ class MyClass(QMainWindow):
 
     def updateUI_102(self,RTC):
         try:
-            if RTC.total_seconds()>15:
+            if RTC.total_seconds()>10:
                     self.ui.plainTextEdit_13.setPlainText("Fail")
                     self.ui.plainTextEdit_13.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: red""")
             else:
@@ -533,12 +535,11 @@ class MyClass(QMainWindow):
     def updateUI_122(self,string1:str):
         try:
             if string1:
-                self.ui.plainTextEdit_12.setPlainText(string1)
-                self.ui.plainTextEdit_12.setStyleSheet("""
-                    font-size: 16px; 
-                    font-weight: bold; 
-                    color: red;
-                """)
+                self.ui.plainTextEdit_12.appendPlainText(string1 + '\n')
+                # self.ui.plainTextEdit_12.setStyleSheet("""
+                #     font-size: 16px;  
+                #     color: black;
+                # """)
         except Exception as e:
             self.ui.plainTextEdit_12.appendPlainText(f"Error updating UI: {str(e)}\n")
 
@@ -547,29 +548,27 @@ class MyClass(QMainWindow):
         try:
             #self.WDTUI_checkedin +=1
             if watchdogreboot_flag and watchdogrebootCount_flag:
-                        self.ui.plainTextEdit_12.setPlainText(f'Device reboot successful. \nCurrent bootcount is: {current_WDTCount}')
+                        self.ui.plainTextEdit_12.appendPlainText(f'WDT testing successful \n')
                         self.ui.plainTextEdit_14.setPlainText("Pass")
                         self.ui.plainTextEdit_14.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: green""")
             else:
-                        self.ui.plainTextEdit_12.setPlainText(f'Device reboot successful. But timeout to get bootcount')
+                        self.ui.plainTextEdit_12.appendPlainText(f'WDT testing fail \n')
                         self.ui.plainTextEdit_14.setPlainText("Fail")
                         self.ui.plainTextEdit_14.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: red""")
 
             self.worker_obj.WDT_result = self.ui.plainTextEdit_14.toPlainText()
            
 
-            if self.worker_obj.Mains_result == 'Pass' and self.worker_obj.IntVtg_result == 'Pass' and self.worker_obj.Gps_result == 'Pass' and self.worker_obj.GSM_result == 'Pass' and self.worker_obj.IGN_result and self.worker_obj.Tamper_result and  self.worker_obj.RTC_result == 'Pass' and self.worker_obj.MEMS_result == 'Pass' and self.worker_obj.MQTT_result == 'Pass'and self.worker_obj.WDT_result == 'Pass':
+            if self.worker_obj.Mains_result == 'Pass' and self.worker_obj.IntVtg_result == 'Pass' and self.worker_obj.Gps_result == 'Pass' and self.worker_obj.GSM_result == 'Pass' and   self.worker_obj.RTC_result == 'Pass' and self.worker_obj.MEMS_result == 'Pass' and self.worker_obj.MQTT_result == 'Pass'and self.worker_obj.WDT_result == 'Pass':
                     self.update_overallResult()
                 
             else:
-                self.ui.textEdit.setPlainText('Pending')
-                #self.update_overallResult()
+                self.ui.textEdit.setPlainText("Pending")
+                self.ui.textEdit.setAlignment(Qt.AlignVCenter | Qt.AlignHCenter)
+                self.ui.textEdit.setStyleSheet("""Font-size:26px; font-weight: Bold; background-color: yellow""")
                 self.ui.pushButton_9.setEnabled(True)
-                self.ui.pushButton_8.setEnabled(True)
-                self.ui.pushButton_2.setEnabled(True)
-
                 
-
+                
             # if self.WDTUI_checkedin ==1:
             #     self.ui.pushButton_9.setEnabled(True)
             #     self.ui.pushButton_8.setEnabled(True)
@@ -586,27 +585,17 @@ class MyClass(QMainWindow):
             self.ui.plainTextEdit_14.setReadOnly(True)
             #self.ui.pushButton_2.setEnabled(True) 
 
-    def updateUI_119(self,IGN,tamper):
+    def updateUI_119(self,tamper):
         try:
-            if IGN == 1:
-                self.ui.plainTextEdit_12.appendPlainText(f'IGN status: {IGN}')
-                self.ui.plainTextEdit_26.setPlainText("Pass")
-                self.ui.plainTextEdit_26.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: green""")
-
-            else:
-                self.ui.plainTextEdit_12.appendPlainText(f'IGN status: {IGN}')
-                self.ui.plainTextEdit_26.setPlainText("Fail")
-                self.ui.plainTextEdit_26.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: red""")
-
-            self.CAN_data_obj.IGN_result = self.ui.plainTextEdit_26.toPlainText()
+            self.ui.Tamp_L.setPlainText(str(tamper))
 
             if tamper == 0:
-                self.ui.plainTextEdit_12.appendPlainText(f'Tamper status: {tamper}')
+                self.ui.plainTextEdit_12.appendPlainText(f'Tamper status: Pass \n')
                 self.ui.plainTextEdit_47.setPlainText("Pass")
                 self.ui.plainTextEdit_47.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: green""")
 
             else:
-                self.ui.plainTextEdit_12.appendPlainText(f'Tamper status: {tamper}')
+                self.ui.plainTextEdit_12.appendPlainText(f'Tamper status: Fail \n')
                 self.ui.plainTextEdit_47.setPlainText("Fail")
                 self.ui.plainTextEdit_47.setStyleSheet("""Font-size:16px; font-weight: Bold; background-color: red""")
 
@@ -616,22 +605,16 @@ class MyClass(QMainWindow):
             self.ui.plainTextEdit_12.appendPlainText(f"Error updating UI: {str(e)}\n")
 
         finally:
-            self.ui.plainTextEdit_26.setReadOnly(True)
+           
             self.ui.plainTextEdit_47.setReadOnly(True) 
 
-    def updateRetry_UI(self, string1: str, flag1: bool):  # Ensure flag1 is a boolean
+    def updateRetry_UI(self, flag1:bool ,flag2:bool):  # Ensure flag1 is a boolean
         try:
-            self.retry_flag = flag1
-            print(f"Debug: string1={string1}, flag1={flag1}")  # Log values for debugging
             
             # Check if string1 is valid
-            if string1:
-                self.ui.plainTextEdit_12.setPlainText(string1)
-                self.ui.plainTextEdit_12.setStyleSheet("""
-                    font-size: 16px; 
-                    font-weight: bold; 
-                    color: red;
-                """)
+            if flag1:
+                self.ui.plainTextEdit_12.appendPlainText('Please wait until retries are done \n')
+                
                 # Disable buttons
                 self.ui.pushButton_9.setEnabled(False)
                 self.ui.pushButton_8.setEnabled(False)
@@ -639,53 +622,15 @@ class MyClass(QMainWindow):
                 print("Buttons disabled.")
 
             # Check if flag1 is True
-            if flag1:
-                string2 = 'Max retries done. Final Testing done.'
-                self.ui.plainTextEdit_12.setStyleSheet("""
-                    font-size: 20px; 
-                    font-weight: bold; 
-                    color: green;
-                """)
-                self.ui.plainTextEdit_12.setPlainText(string2)
-                self.timer.stop()
+            elif flag2:
+                print('inside flag 2')
+                # string2 = 'Max retries done. Final Testing done.'
+               
+                # self.ui.plainTextEdit_12.setPlainText(string2)
+                #self.timer.stop()
                 self.update_overallResult()
-                # self.ui.pushButton_9.setEnabled(True)
-                # self.ui.pushButton_8.setEnabled(True)
-                # self.ui.pushButton_2.setEnabled(True)
-
-            #Overall result check
-            # if (
-            #     self.worker_obj.Mains_result == 'Pass'
-            #     and self.worker_obj.IntVtg_result == 'Pass'
-            #     and self.worker_obj.Gps_result == 'Pass'
-            #     and self.worker_obj.GSM_result == 'Pass'
-            #     and self.worker_obj.IGN_result == 'Pass'
-            #     and self.worker_obj.Tamper_result == 'Pass'
-            #     and self.worker_obj.RTC_result == 'Pass'
-            #     and self.worker_obj.MEMS_result == 'Pass'
-            #     and self.worker_obj.MQTT_result == 'Pass'
-            #     and self.worker_obj.WDT_result == 'Pass'
-            # ):
-            #     self.ui.textEdit.setText("Pass")
-            #     self.ui.textEdit.setAlignment(Qt.AlignCenter)
-            #     self.ui.textEdit.setStyleSheet("""
-            #         font-size: 24px; 
-            #         font-weight: bold; 
-            #         background-color: green;
-            #     """)
-            # else:
-            #     self.ui.textEdit.setText("Fail")
-            #     self.ui.textEdit.setAlignment(Qt.AlignCenter)
-            #     self.ui.textEdit.setStyleSheet("""
-            #         font-size: 24px; 
-            #         font-weight: bold; 
-            #         background-color: red;
-            #     """)
-
-            # # Update overall result
-            # self.worker_obj.overall_result = self.ui.textEdit.toPlainText()
-
-          
+                
+            
 
         except Exception as e:
             print(f"Error in updateRetry_UI: {e}")  # Debugging output
@@ -694,16 +639,17 @@ class MyClass(QMainWindow):
 
     def update_overallResult(self):
         try:
+                print('inside update ui func')
             
-                if self.worker_obj.Mains_result == 'Pass' and self.worker_obj.IntVtg_result == 'Pass' and self.worker_obj.Gps_result == 'Pass' and self.worker_obj.GSM_result == 'Pass' and self.worker_obj.IGN_result and self.worker_obj.Tamper_result and  self.worker_obj.RTC_result == 'Pass' and self.worker_obj.MEMS_result == 'Pass' and self.worker_obj.MQTT_result == 'Pass'and self.worker_obj.WDT_result == 'Pass':
-
+                if self.worker_obj.Mains_result == 'Pass' and self.worker_obj.IntVtg_result == 'Pass' and self.worker_obj.Gps_result == 'Pass' and self.worker_obj.GSM_result == 'Pass' and  self.worker_obj.RTC_result == 'Pass' and self.worker_obj.MEMS_result == 'Pass' and self.worker_obj.MQTT_result == 'Pass'and self.worker_obj.WDT_result == 'Pass':
+                    print('wdt flag',self.worker_obj.WDT_result)
                     self.ui.textEdit.setText("Pass")
-                    self.ui.textEdit.setAlignment(Qt.AlignCenter)
+                    self.ui.textEdit.setAlignment(Qt.AlignVCenter | Qt.AlignHCenter)
                     self.ui.textEdit.setStyleSheet("""Font-size:24px; font-weight: Bold; background-color: green""")
                 else:
                     self.ui.textEdit.setText("Fail")
-                    self.ui.textEdit.setAlignment(Qt.AlignCenter)
-                    self.ui.textEdit.setStyleSheet("""Font-size:24px; font-weight: Bold; background-color: red""")
+                    self.ui.textEdit.setAlignment(Qt.AlignVCenter | Qt.AlignHCenter)
+                    self.ui.textEdit.setStyleSheet("""Font-size:26px; font-weight: Bold; background-color: red""")
 
                 # Update overall result
                 self.worker_obj.overall_result = self.ui.textEdit.toPlainText()
@@ -712,8 +658,6 @@ class MyClass(QMainWindow):
                 self.ui.pushButton_8.setEnabled(True)
                 self.ui.pushButton_2.setEnabled(True)
 
-
-            
         except Exception as e:
                 print(f"Error : {e}")
                 
