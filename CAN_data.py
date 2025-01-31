@@ -54,8 +54,8 @@ class Worker(QObject):
     update_121_singal = pyqtSignal(bool,bool,bool,bool,int,int,int,int)
     update_122_signal = pyqtSignal(str)
     update_123_singal = pyqtSignal(bool,bool,int)
-    update_119_singal = pyqtSignal(int,int)
-    update_retryUI_signal = pyqtSignal(str,bool)
+    update_119_singal = pyqtSignal(int)
+    update_retryUI_signal = pyqtSignal(bool,bool)
     
     def __init__(self,can_data=None):
         super().__init__()
@@ -155,8 +155,8 @@ class Worker(QObject):
         self.watchdogrebootCount_flag = False
         self.fun123_checkedin= 0
         self.retry = 0
-        self.reboot_str ="Please wait device is rebooting and requesting a boot count"
-        self.retry_str = "Starting retries..."
+        self.reboot_str ="Please wait WDT is in progress"
+        self.retry_str_flag = "Please wait until retries are done.Starting retries..."
         self.max_retries_flag= False
         self.WDT_MSG_flag = False
         
@@ -175,7 +175,7 @@ class Worker(QObject):
         self.function113_done = False
         self.function114_done = False
         self.function102_done = False
-        self.DIs_func_done  =   False
+        self.function119_done = False
         self.function121_done = False
         self.function122_done = False
         self.function123_done = False
@@ -215,7 +215,7 @@ class Worker(QObject):
         self.function113_done = False
         self.function114_done = False
         self.function102_done = False
-        self.DIs_func_done =  False
+        self.function119_done = False
         self.function121_done = False
         self.function122_done = False
         self.function123_done = False
@@ -1292,7 +1292,7 @@ class Worker(QObject):
             self.retry_timer = QTimer(self)
             self.retry_timer.timeout.connect(self.fun_0x123)
             self.retry_timer.setSingleShot(True)
-            self.retry_timer.start(35000)
+            self.retry_timer.start(45000)
             #time.sleep(2)  # Sleep to allow processing
             
             #self.execute_next_function()  # Move on to the next function
@@ -1546,7 +1546,7 @@ class Worker(QObject):
     #     self.DIs_result = self.ui.plainTextEdit_22.toPlainText()
     #     self.IGN_result = self.ui.plainTextEdit_26.toPlainText()
 
-    def DIs_func(self, retry_mode=False):
+    def fun_0x119(self, retry_mode=False):
         if self.busy:  # Check if the system is busy
                 print("System is busy, please wait...")
                 return
@@ -1572,20 +1572,18 @@ class Worker(QObject):
                 message = self.bus.recv(timeout=2)  # 2 seconds timeout for response
         
                 if message:
-                    self.IGN = message.data[1]
-                    print('IGN :', self.IGN)
-
-                    self.tamper = message.data[2]
+                    
+                    self.tamper = message.data[1]
                     print('Tamper :',self.tamper)
 
-                    self.update_119_singal.emit(self.IGN , self.tamper)
+                    self.update_119_singal.emit( self.tamper)
 
         except can.CanError as e:
                 print(f"CAN error: {str(e)}")
     
         finally:
                 self.busy = False  # Mark the system as not busy
-                self.DIs_func_done = True
+                self.function119_done = True
                 received_frames[0x119].clear()
                 if self.bus:  # Ensure we properly shut down the bus
                     self.bus.shutdown()  # Properly shut down the bus
@@ -1681,14 +1679,14 @@ class Worker(QObject):
             self.retry_timer.setSingleShot(True)
             self.retry_timer.start(1000)
             
-        elif self.function121_done and not self.DIs_func_done:
+        elif self.function121_done and not self.function119_done:
             self.retry_timer = QTimer(self)
-            self.retry_timer.timeout.connect(self.DIs_func)
+            self.retry_timer.timeout.connect(self.fun_0x119)
             self.retry_timer.setSingleShot(True)
             self.retry_timer.start(1000)
             
 
-        elif self.DIs_func and not self.function123_done:
+        elif self.function119_done and not self.function123_done:
             self.retry_timer = QTimer(self)
             self.retry_timer.timeout.connect(self.fun_0x123)
             self.retry_timer.setSingleShot(True)
@@ -1708,13 +1706,9 @@ class Worker(QObject):
         print("Inside fail_func")
         self.retry = 0
         self.max_retries_flag = False
-        self.update_retryUI_signal.emit(self.retry_str,self.max_retries_flag)
-        # self.ui.plainTextEdit_12.setPlainText("Starting retries...")
-        # self.ui.plainTextEdit_12.setStyleSheet("""
-        #     font-size: 16px; 
-        #     font-weight: bold; 
-        #     color: red;
-        # """)
+        self.retry_str_flag = True
+        self.update_retryUI_signal.emit(self.retry_str_flag,self.max_retries_flag)
+        
         
         self.failFunc_list = []  # Ensure the list is empty before populating it
         self.fail_attempts = {}  # A dictionary to track the retry attempts for each function
@@ -1749,7 +1743,7 @@ class Worker(QObject):
             self.failFunc_list.append(self.fun_0x102)
             self.fail_attempts[self.fun_0x102] = 0
         if self.WDT_result == 'Fail':
-            self.failFunc_list.extend([self.fun_0x123])
+            self.failFunc_list.append(self.fun_0x123)
             self.fail_attempts[self.fun_0x123] = 0
 
         # Print the failed function list
@@ -1763,20 +1757,20 @@ class Worker(QObject):
         self.retry_timer.start(20000)  # Start with a 20-second interval
 
         # Trigger the first retry immediately
-        #self.retry_iteration()
+        self.retry_iteration()
 
     def retry_iteration(self):
         if self.retry >= 3:
             print("Max retries reached. Stopping...")
-            self.max_retries_flag= True
-            #QMessageBox.warning(self, "Warning", "Max retries reached. Stopping retries.")
-            self.update_retryUI_signal.emit(self.retry_str,self.max_retries_flag)
+            self.retry_str_flag = False
+            self.max_retries_flag = True
+            self.update_retryUI_signal.emit(self.retry_str_flag, self.max_retries_flag)
             self.retry_timer.stop()
-            #self.ui.pushButton_9.setEnabled(True)
             return
 
         print(f"Starting retry iteration {self.retry + 1}...")
-        
+
+        any_function_passed = False  # Track if any function passes during this iteration
 
         # Iterate through the functions in the failure list
         for func in list(self.failFunc_list):  # Using list() to avoid modifying the list while iterating
@@ -1784,7 +1778,6 @@ class Worker(QObject):
             if self.is_flag_passed(func):
                 print(f"Function {func.__name__} already passed. Skipping...")
                 self.failFunc_list.remove(func)  # Remove passed functions from the retry list
-                
                 continue
 
             try:
@@ -1794,21 +1787,23 @@ class Worker(QObject):
                     print(f"Function {func.__name__} passed.")
                     self.update_flag(func, 'Pass')  # Update the flag to "Pass"
                     self.failFunc_list.remove(func)  # Remove from the failure list
-                   
-                else:
-                    print(f"Function {func.__name__} failed, will retry.")
+                    any_function_passed = True  # Mark that a function passed
             except Exception as e:
                 print(f"Error while calling {func.__name__}: {e}")
                 continue
 
-        # If there are no functions left to retry, stop the retry timer
-        if not self.failFunc_list:
-            print("All functions succeeded. Stopping retries.")
-            self.retry_timer.stop()
-            #self.update_retryUI_signal.emit(self.retry_str,self.self.max_retries_flag)
-            return
+        # If any function passed before 3 retries, stop retries immediately
+        if any_function_passed or not self.failFunc_list:
+            print("All functions succeeded before 3 retries. Stopping retries immediately.")
+            self.retry_str_flag = False
+            self.max_retries_flag = True
+            self.update_retryUI_signal.emit(self.retry_str_flag, self.max_retries_flag)  # Update UI immediately
+            self.retry_timer.stop()  # Stop the retry timer
+            return  # Explicit return to prevent further execution
 
+        # Move retry increment before next iteration
         self.retry += 1
+
 
 
 
@@ -1831,7 +1826,7 @@ class Worker(QObject):
             return self.RTC_result == 'Pass'
         elif func == self.fun_0x114:
             return self.MEMS_result == 'Pass'
-        elif func == self.fun_0x123 or self.fun_0x122:
+        elif func == self.fun_0x123 :
             return self.WDT_result == 'Pass'
         
         
